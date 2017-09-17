@@ -798,7 +798,7 @@ void mavlink_output_40hz(void)
 
 	uint8_t spread_transmission_load = 0;   // Used to spread sending of different message types over a period of 1 second.
 
-	if (++mavlink_counter_40hz >= 40) mavlink_counter_40hz = 0;
+	if (++mavlink_counter_40hz >= MAVLINK_FRAME_FREQUENCY) mavlink_counter_40hz = 0;
 
 	usec += 25000;  // Frequency sensitive code
 	msec += 25;     // Frequency sensitive code
@@ -848,7 +848,7 @@ void mavlink_output_40hz(void)
 		else
 			gps_fix_type = 0;
 		mavlink_msg_gps_raw_int_send(MAVLINK_COMM_0, usec, gps_fix_type, lat_gps.WW, lon_gps.WW, alt_sl_gps.WW, hdop, 65535, sog_gps.BB, cog_gps.BB, svs);
-	}
+    }
 
 	// GLOBAL POSITION INT - derived from fused sensors
 	// Note: This code assumes that Dead Reckoning is running.

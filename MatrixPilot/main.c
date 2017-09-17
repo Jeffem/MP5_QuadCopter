@@ -68,6 +68,7 @@ static jmp_buf buf;
 
 int matrixpilot_init(void)
 {
+    dcm_flags._.udb_init_finished = 0;//Avoid sending UART messages
 #if (USE_USB == 1)
 	preflight();    // perhaps this would be better called usb_init()
 #endif
@@ -85,6 +86,7 @@ int matrixpilot_init(void)
 	init_behavior();
 	telemetry_init();
 	mavlink_init();
+    dcm_flags._.udb_init_finished = 1;// UART messages can be sent now
 
 #ifdef _MSC_VER
 #if (USE_MAVLINK == 1)
