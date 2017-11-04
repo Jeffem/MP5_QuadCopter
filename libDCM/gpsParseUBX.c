@@ -329,7 +329,7 @@ uint8_t* const msg_DOP_parse[] = {
 	&un, &un,                                           // gDOP
 	&un, &un,                                           // pDOP
 	&un, &un,                                           // tDOP
-	&vdop_._.B0, &vdop_._.B1,                           // vDOP
+	&un, &un,                                           // vDOP
 	&hdop_._.B0, &hdop_._.B1,                           // hDOP
 	&un, &un,                                           // nDOP
 	&un, &un,                                           // eDOP
@@ -404,8 +404,8 @@ void gps_startup_sequence(int16_t gpscount)
 		// set the UBX to use binary mode
 		gpsoutline(bin_mode_nonmea);
 #if (HILSIM != 1)
-	else if (gpscount == 150)
-		udb_gps_set_rate(19200);
+        else if (gpscount == 150)
+	         udb_gps_set_rate(19200);
 #endif
 	else if (gpscount == 140)
 		gpsoutbin(set_rate_length, set_rate);
@@ -426,7 +426,7 @@ void gps_startup_sequence(int16_t gpscount)
 		gpsoutbin(enable_SBAS_length, enable_SBAS);
 	else if (gpscount == 70)
 		gpsoutbin(config_NAV5_length, config_NAV5);
-}
+        }
 
 boolean gps_nav_valid(void)
 {
@@ -559,7 +559,7 @@ static void msg_PL1(uint8_t gpschar)
 	switch (msg_class) {
 		case 0x01 : {
 			switch (msg_id) {
-				case 0x02 : { // NAV_POSLLH message
+				case 0x02 : { // NAV-POSLLH message
 					if (payloadlength.BB  == NUM_POINTERS_IN(msg_POSLLH_parse))
 					{
 						msg_parse = &msg_POSLLH;
@@ -571,7 +571,7 @@ static void msg_PL1(uint8_t gpschar)
 					}
 					break;
 				}
-				case 0x04 : { // NAV_DOP message
+				case 0x04 : { // NAV-DOP message
 					if (payloadlength.BB  == NUM_POINTERS_IN(msg_DOP_parse))
 					{
 						msg_parse = &msg_DOP;
@@ -583,7 +583,7 @@ static void msg_PL1(uint8_t gpschar)
 					}
 					break;
 				}
-				case 0x06 : { // NAV_SOL message
+				case 0x06 : { // NAV-SOL message
 					if (payloadlength.BB  == NUM_POINTERS_IN(msg_SOL_parse))
 					{
 						msg_parse = &msg_SOL;
@@ -595,7 +595,7 @@ static void msg_PL1(uint8_t gpschar)
 					}
 					break;
 				}
-				case 0x12 : { // NAV_VELNED message
+				case 0x12 : { // NAV-VELNED message
 					if (payloadlength.BB  == NUM_POINTERS_IN(msg_VELNED_parse))
 					{
 						msg_parse = &msg_VELNED;
@@ -608,7 +608,7 @@ static void msg_PL1(uint8_t gpschar)
 					break;
 				}
 #if (HILSIM == 1)
-				case 0xAB : { // NAV_BODYRATES message - THIS IS NOT AN OFFICIAL UBX MESSAGE
+				case 0xAB : { // NAV-BODYRATES message - THIS IS NOT AN OFFICIAL UBX MESSAGE
 					// WE ARE FAKING THIS FOR HIL SIMULATION
 					if (payloadlength.BB  == NUM_POINTERS_IN(msg_BODYRATES_parse))
 					{
@@ -620,7 +620,7 @@ static void msg_PL1(uint8_t gpschar)
 					}
 					break;
 				}
-				case 0xAC : { // NAV_KEYSTROKE message - THIS IS NOT AN OFFICIAL UBX MESSAGE
+				case 0xAC : { // NAV-KEYSTROKE message - THIS IS NOT AN OFFICIAL UBX MESSAGE
 					// WE ARE FAKING THIS FOR HIL SIMULATION
 					if (payloadlength.BB ==  NUM_POINTERS_IN(msg_KEYSTROKE_parse))
 					{
@@ -628,7 +628,7 @@ static void msg_PL1(uint8_t gpschar)
 					}
 					else
 					{
-						printf("NAV_KEYSTROKE, bad payloadlength %i != %i\r\n", payloadlength.BB, (int)NUM_POINTERS_IN(msg_KEYSTROKE_parse));
+						printf("NAV-KEYSTROKE, bad payloadlength %i != %i\r\n", payloadlength.BB, (int)NUM_POINTERS_IN(msg_KEYSTROKE_parse));
 						msg_parse = &msg_B3;    // error condition
 					}
 					break;
@@ -878,7 +878,6 @@ void gps_commit_data(void)
 
 	climb_gps.BB    = - climb_gps_._.W0;            // SIRF uses 2 byte climb rate, UBX provides 4 bytes
 	hdop            = (uint8_t)(hdop_.BB / 20);     // SIRF scales HDOP by 5, UBX by 10^-2
-	vdop		= (uint8_t)(vdop_.BB / 20);
 	// SIRF provides position in m, UBX provides cm
 //	xpg.WW          = xpg_.WW / 100;
 //	ypg.WW          = ypg_.WW / 100;
