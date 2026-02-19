@@ -1,0 +1,28 @@
+build/default/debug/_ext/1077454706/uart.o: ../../libUDB/uart.c \
+ ../../libUDB/libUDB.h ../../Config/options.h ../../libUDB/fixDeps.h \
+ ../../libUDB/libUDB_defines.h ../../libUDB/udbTypes.h \
+ ../../libUDB/ConfigUDB5.h ../../libUDB/boardRotation_defines.h \
+ ../../Config/options_nv_memory.h ../../libUDB/oscillator.h \
+ ../../libUDB/uart.h ../../Config/options_ports.h
+
+../../libUDB/libUDB.h:
+
+../../Config/options.h:
+
+../../libUDB/fixDeps.h:
+
+../../libUDB/libUDB_defines.h:
+
+../../libUDB/udbTypes.h:
+
+../../libUDB/ConfigUDB5.h:
+
+../../libUDB/boardRotation_defines.h:
+
+../../Config/options_nv_memory.h:
+
+../../libUDB/oscillator.h:
+
+../../libUDB/uart.h:
+
+../../Config/options_ports.h:
