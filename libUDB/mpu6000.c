@@ -34,7 +34,7 @@ boolean is_ICM_20689 = 0;
 
 #if (BOARD_TYPE != UDB4_BOARD)
 
-#include <spi.h>
+#include "spi.h"
 
 //Sensor variables
 uint16_t mpu_data[8], mpuCnt = 0, mpuOverSample = 1;
