@@ -58,12 +58,6 @@
 #define T3FREQ (2000000 * PWMOUTSCALE)
 // Timer 3 period is 1 / (ESC_HZ)
 #define T3PERIOD (T3FREQ / ESC_HZ)
-inline int scale_pwm_out(int channel) {
-    union longww pww;
-    pww.WW = __builtin_muluu(udb_pwOut[channel], (unsigned int)(65536 * PWMOUTSCALE / 4));
-    pww.WW <<= 2;
-    return pww._.W1;
-}
 #endif
 
 //	routines to drive the PWM pins for the servos,

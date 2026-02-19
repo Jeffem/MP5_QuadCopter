@@ -26,8 +26,8 @@
 #include "oscillator.h"
 #include "interrupt.h"
 #include "mpu_spi.h"
-#include <delay.h>
-#include <spi.h>
+#include "delay.h"
+#include "spi.h"
 
 #if (MPU_SPI == 1)
 
@@ -86,6 +86,41 @@ static int16_t SPI_j;
 static int16_t SPI_n;
 #endif
 
+#include <xc.h>
+
+// Fermer SPI2 (remplace CloseSPI / CloseSPI2)
+static inline void CloseSPI2_local(void)
+{
+    SPI2STATbits.SPIEN = 0;   // désactive le module SPI2
+    IEC2bits.SPI2IE    = 0;   // désactive l'interruption SPI2
+    IFS2bits.SPI2IF    = 0;   // efface le flag d'interruption SPI2
+}
+
+// Configurer les interruptions SPI2 (remplace ConfigIntSPI)
+static inline void ConfigIntSPI2_local(uint16_t int_priority)
+{
+    // désactiver et effacer d'abord
+    IEC2bits.SPI2IE = 0;
+    IFS2bits.SPI2IF = 0;
+
+    // int_priority : 1..7
+    uint16_t prio = int_priority & 0x7;
+    IPC8bits.SPI2IP = prio;   // priorité IT SPI2 (registre à vérifier selon device)
+    IEC2bits.SPI2IE = 1;      // activer interruption SPI2
+}
+
+// Ouvrir/configurer SPI2 en maître 16 bits (remplace OpenSPI)
+static inline void OpenSPI2_local(uint16_t spicon1, uint16_t spicon2, uint16_t spistat)
+{
+    SPI2STATbits.SPIEN = 0;       // désactive le module pendant la config
+
+    SPI2CON1 = spicon1;           // config mode, master/slave, prescalers, CKP/CKE, etc.
+    SPI2CON2 = spicon2;           // options avancées (framing, etc.)
+    SPI2STAT = spistat;           // status et bit SPIEN si souhaité
+
+    // Assure-toi que SPIEN est bien positionné à la fin
+    SPI2STATbits.SPIEN = 1;
+}
 
 // Configure SPI module in 16-bit master mode
 void initMPUSPI_master16(uint16_t priPre, uint16_t secPre)
@@ -96,9 +131,10 @@ void initMPUSPI_master16(uint16_t priPre, uint16_t secPre)
 
 	MPU_SS = 1;                 // deassert MPU SS
 	MPU_SS_TRIS = 0;            // make MPU SS an output
-	CloseSPI();                 // turn off SPI module
-	ConfigIntSPI(SPI_INT_DIS & SPI_INT_PRI_6);
-
+	//CloseSPI();                 // turn off SPI module
+    CloseSPI2_local();          // remplace CloseSPI()
+	//ConfigIntSPI(SPI_INT_DIS & SPI_INT_PRI_6);
+    ConfigIntSPI2_local(SPI_INT_DIS & SPI_INT_PRI_6);
 #if defined(__dsPIC33E__)
 	SPICON1Value =
 	    ENABLE_SDO_PIN & SPI_MODE16_ON & ENABLE_SCK_PIN &
@@ -126,7 +162,8 @@ void initMPUSPI_master16(uint16_t priPre, uint16_t secPre)
 //	 * Example: OpenSPI1(SPI_MODE32_ON|SPI_SMP_ON|MASTER_ENABLE_ON|SEC_PRESCAL_1_1|PRI_PRESCAL_1_1, SPI_ENABLE);
 	OpenSPI(SPICON1Value, SPISTATValue);
 #else
-	OpenSPI(SPICON1Value, SPICON2Value, SPISTATValue);
+	//OpenSPI(SPICON1Value, SPICON2Value, SPISTATValue);
+    OpenSPI2_local(SPICON1Value, SPICON2Value, SPISTATValue);
 //	printf("SPI1STAT %04X, SPI1CON1 %04X, SPI1CON2 %04X\r\n", SPI1STAT, SPI1CON1, SPI1CON2);
 #endif
 
