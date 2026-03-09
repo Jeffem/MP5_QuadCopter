@@ -191,7 +191,7 @@
 // recommended that you actually use this option, since you'd have no manual control to fall
 // back on if things go wrong.  It may not even be legal in your area.
 #ifndef NORADIO
-#define NORADIO                             1
+#define NORADIO                             0
 #endif
 
 
