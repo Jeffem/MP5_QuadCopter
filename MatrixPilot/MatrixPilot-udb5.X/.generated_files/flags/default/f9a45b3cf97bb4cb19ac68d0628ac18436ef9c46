@@ -1,1 +1,0 @@
- -c -mcpu=$(MP_PROCESSOR_OPTION)        -g -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mlarge-code -mlarge-data -O0 -I"../../Config" -I"../../MAVLink/include" -I"../../Microchip" -I"../../Microchip/Include" -I"../../libVectorMatrix" -DUDB5=1 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"D:\Microchip\MP5_QuadCopter-master\MatrixPilot\MAVMission.c

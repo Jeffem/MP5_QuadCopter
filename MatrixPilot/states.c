@@ -92,7 +92,7 @@ void init_states(void)
 	gps_data_age = GPS_DATA_MAX_AGE+1;
 	dcm_flags._.dead_reckon_enable = 0;
 	state_flags._.update_autopilot_state_asap = 0;
-       desiredtailFlash = 0;
+    desiredtailFlash = 0;
 	stateS = &startS;
 }
 
@@ -208,7 +208,7 @@ static void ent_calibrateS(void)
 	stateS = &calibrateS;
 	calib_timer = CALIB_PAUSE;
 	led_on(LED_RED); // turn on mode led
-           desiredtailFlash = 1;    
+    desiredtailFlash = 1;    
 }
 
 // Acquire state is used to wait for the GPS to achieve lock.
@@ -242,7 +242,7 @@ static void ent_acquiringS(void)
 	standby_timer = STANDBY_PAUSE - CALIB_PAUSE;
 	led_off(LED_RED);
 	led_on(LED_ORANGE);
-       desiredtailFlash = 2;      
+    desiredtailFlash = 2;      
 }
 
 //	Manual state is used for direct pass-through control from radio to servos.
@@ -264,7 +264,7 @@ static void ent_manualS(void)
 	waggle = 0;
 	led_off(LED_RED);
 	stateS = &manualS;
-        desiredtailFlash = 3;
+    desiredtailFlash = 3;
 }
 
 //	Auto state provides augmented control.
@@ -288,7 +288,7 @@ static void ent_stabilizedS(void)
 //	LED_RED = LED_ON;
     LED_ORANGE = LED_ON;
 	stateS = &stabilizedS;
-       desiredtailFlash = 4;
+    desiredtailFlash = 4;
 }
 
 #ifdef CATAPULT_LAUNCH_ENABLE
@@ -345,7 +345,7 @@ static void ent_waypointS(void)
 	LED_ORANGE = LED_OFF; // turn on mode led
 	LED_BLUE = LED_OFF; // turn on mode led
 	stateS = &waypointS;
-        desiredtailFlash = 5;
+    desiredtailFlash = 5;
 }
 
 //	Come home state, entered when the radio signal is lost, and gps is locked.
@@ -374,7 +374,7 @@ static void ent_returnS(void)
 	LED_ORANGE = LED_ON; // turn on mode led
 	LED_BLUE = LED_ON; // turn on mode led
 	stateS = &returnS;
-       desiredtailFlash = 6;
+    desiredtailFlash = 6;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

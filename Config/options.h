@@ -176,7 +176,7 @@
 
 // Define USE_LIDAR_ALTITUDE to be 1 to use Lidar Lite V3 for altitude correction.
 #ifndef USE_LIDAR_ALTITUDE
-#define USE_LIDAR_ALTITUDE                  0
+#define USE_LIDAR_ALTITUDE                  1
 #endif
 
 // Racing Mode

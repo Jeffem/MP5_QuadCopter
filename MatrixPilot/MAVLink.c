@@ -164,6 +164,7 @@ void mavlink_init(void)
 	// QGroundControl GCS lets user send message to increase stream rate
 	streamRates[MAV_DATA_STREAM_RC_CHANNELS] = MAVLINK_RATE_RC_CHAN;
 	streamRates[MAV_DATA_STREAM_RAW_SENSORS] = MAVLINK_RATE_RAW_SENSORS;
+	streamRates[MAV_DATA_STREAM_RATE_IMU_RAW] = MAVLINK_RATE_IMU_RAW;
 	streamRates[MAV_DATA_STREAM_POSITION]    = MAVLINK_RATE_POSITION;
 	streamRates[MAV_DATA_STREAM_EXTRA1]      = MAVLINK_RATE_SUE;
 	streamRates[MAV_DATA_STREAM_EXTRA2]      = MAVLINK_RATE_POSITION_SENSORS;
@@ -407,6 +408,7 @@ static void MAVLinkRequestDataStream(mavlink_message_t* handle_msg) // MAVLINK_M
 	{
 		// Warning: mavproxy automatically sets all.  Do not include all here, it will overide defaults.
 		streamRates[MAV_DATA_STREAM_RAW_SENSORS] = freq;
+		streamRates[MAV_DATA_STREAM_RATE_IMU_RAW] = freq;
 		streamRates[MAV_DATA_STREAM_RC_CHANNELS] = freq;
 	}
 	else
@@ -970,7 +972,7 @@ extern int control_mode;
 	// ATTITUDE
 	//  Roll: Earth Frame of Reference
 	spread_transmission_load = 12;
-	if (mavlink_frequency_send(streamRates[MAV_DATA_STREAM_RAW_SENSORS], mavlink_counter_40hz + spread_transmission_load))
+	if (mavlink_frequency_send(streamRates[MAV_DATA_STREAM_POSITION], mavlink_counter_40hz + spread_transmission_load))
 	{
 		matrix_accum.x = rmat[8];
 		matrix_accum.y = rmat[6];
@@ -1111,7 +1113,7 @@ extern int control_mode;
 	// See:- http://code.google.com/p/gentlenav/wiki/UDBCoordinateSystems and the "Aviation Convention" diagram.
 
 	spread_transmission_load = 30;
-	if (mavlink_frequency_send(streamRates[MAV_DATA_STREAM_RAW_SENSORS], mavlink_counter_40hz + spread_transmission_load))
+	if (mavlink_frequency_send(streamRates[MAV_DATA_STREAM_RATE_IMU_RAW], mavlink_counter_40hz + spread_transmission_load))
 	{
 #if (MAG_YAW_DRIFT == 1)    // Magnetometer is connected
 		extern int16_t magFieldRaw[];
