@@ -51,6 +51,19 @@
 /Tools/LedTest/LedTest-udb4.X/dist/default/
 /Tools/LedTest/LedTest-udb4.X/nbproject/Makefile*
 /Tools/LedTest/LedTest-udb4.X/nbproject/Package*
+# MPLAB X / MatrixPilot générés
+MatrixPilot/MatrixPilot-udb5.X/.generated_files/
+MatrixPilot/MatrixPilot-udb5.X/build/
+MatrixPilot/MatrixPilot-udb5.X/dist/
+MatrixPilot/MatrixPilot-udb5.X/nbproject/private/
+
+# Fichiers privés NetBeans/MPLAB X (pattern générique)
+nbproject/private/
+build/
+dist/
+
+# Fichier de copie Delphi / perso
+libUDB/delay - Copie.h
 
 *.o
 
@@ -70,4 +83,5 @@ MatrixPilot.files
 MatrixPilot.includes
 
 _build
+
 
