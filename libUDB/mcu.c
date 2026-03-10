@@ -28,8 +28,9 @@
 #include <stdio.h>
 
 #if (BOARD_TYPE == UDB4_BOARD || BOARD_TYPE == UDB5_BOARD)
-#include <p33Fxxxx.h>
+ #include <p33Fxxxx.h>
 #ifdef __XC16__
+/* modif gfm : repostés dans config_bits
 #pragma config FNOSC = PRIPLL
 #pragma config FCKSM = CSDCMD
 #pragma config OSCIOFNC = OFF
@@ -41,7 +42,7 @@
 #pragma config FPWRT = PWR1
 #pragma config JTAGEN = OFF
 #pragma config ICS = PGD2
-
+*/
 #else // Not __XC16__
 _FOSCSEL(FNOSC_PRIPLL); // pri plus PLL (primary osc  w/ PLL)
 _FOSC(FCKSM_CSDCMD &
