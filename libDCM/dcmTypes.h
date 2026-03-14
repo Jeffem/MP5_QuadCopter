@@ -32,7 +32,7 @@ struct relative3D_32 { int32_t x; int32_t y; int16_t z; };  // vect3_32t (compat
 // deprecated: struct absolute3D    { int32_t x; int32_t y; int32_t z; };  // vect3_32t
 struct waypoint3D    { int32_t x; int32_t y; int16_t z; };  // vect3_32t (compat) same as relative3D_32
 //struct waypoint3D    { int32_t x; int32_t y; int32_t z; };
-struct fixedOrigin3D { int32_t x; int32_t y; float z; };
+typedef struct { int32_t x; int32_t y; float z; int32_t N; int32_t E; float D; } fixedOrigin3D ;
 
 // New generic vector types
 

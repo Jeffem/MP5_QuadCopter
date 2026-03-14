@@ -103,12 +103,12 @@ static void setup_origin(void)
 {
 	if (use_fixed_origin())
 	{
-		vect3_32t origin = get_fixed_origin();
-		dcm_set_origin_location(origin.x, origin.y, origin.z);
+		fixedOrigin3D origin = get_fixed_origin();
+		dcm_set_origin_location(origin.x, origin.y, origin.z, origin.N,  origin.E, origin.D);
 	}
 	else
 	{
-		dcm_set_origin_location(lon_gps.WW, lat_gps.WW, alt_sl_gps.WW);
+		dcm_set_origin_location(lon_gps.WW, lat_gps.WW, alt_sl_gps.WW, relposN.WW, relposE.WW, relposD.WW);
 	}
 	state_flags._.f13_print_req = 1; // Flag telemetry output that the origin can now be printed.
 }

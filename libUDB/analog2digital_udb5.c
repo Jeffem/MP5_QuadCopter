@@ -265,7 +265,7 @@ void __attribute__((__interrupt__,__no_auto_psv__)) _DMA0Interrupt(void)
 		udb_analogInputs[3].value = __builtin_divsd(udb_analogInputs[3].sum, sample_count);
 #endif
 // modif gfm to avoid division by 0 exception occurrence encountered on my UDB5
-                  sample_count = 0;
+        sample_count = 0;
 		udb_vcc.sum = 0;
 		udb_5v.sum = 0;
 #if (NUM_ANALOG_INPUTS >= 1)

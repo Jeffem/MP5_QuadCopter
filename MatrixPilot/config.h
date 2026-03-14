@@ -82,7 +82,7 @@ struct gains_variables {
 	float RollKD;
 	float RollKA;
 	float AileronBoost;
-	float Pitchgain;
+	float PitchKP;
 	float PitchKD;
 	float PitchKA;
 	float RudderElevMix;
@@ -116,7 +116,7 @@ struct altit_variables {
 struct hover_variables {
 	float HoverRollKP;
 	float HoverRollKD;
-	float HoverPitchGain;
+	float HoverPitchKP;
 	float HoverPitchKD;
 	float HoverPitchOffset;
 	float HoverYawKP;

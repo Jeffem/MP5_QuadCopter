@@ -34,12 +34,12 @@
 #define HOVERPOFFSET ((int32_t)(hover.HoverPitchOffset*(RMAX/57.3)))
 #define HOVERPTOWP ((int32_t)(hover.HoverPitchTowardsWP*(RMAX/57.3)))
 
-uint16_t pitchgain;
+uint16_t pitchkp;
 uint16_t pitchfdfwd;
 uint16_t pitchkd;
 uint16_t pitchka;
 static union longww  pitchAccel_1 = { 0 };
-uint16_t hoverpitchgain;
+uint16_t hoverpitchkp;
 uint16_t hoverpitchkd;
 uint16_t pitchkafilter;//Contain the static filter gain
 
@@ -54,22 +54,22 @@ static void hoverPitchCntrl(void);
 
 void init_pitchCntrl(void)
 {
-	pitchgain = (uint16_t)(gains.Pitchgain*RMAX);
-	pitchfdfwd = (uint16_t)(turns.FeedForward*gains.Pitchgain*RMAX);
+	pitchkp = (uint16_t)(gains.PitchKP*RMAX);
+	pitchfdfwd = (uint16_t)(turns.FeedForward*gains.PitchKP*RMAX);
 	pitchkd = (uint16_t) (gains.PitchKD*SCALEGYRO*RMAX);
 	pitchka = (uint16_t) (gains.PitchKA*SCALEGYRO*RMAX);
-         pitchkafilter   = (uint16_t)(gains.PitchKA*SCALEGYRO*RMAX*20);//Contain the static filter gain
-	hoverpitchgain = (uint16_t)(hover.HoverPitchGain*RMAX);
+    pitchkafilter   = (uint16_t)(gains.PitchKA*SCALEGYRO*RMAX*20);//Contain the static filter gain
+	hoverpitchkp = (uint16_t)(hover.HoverPitchKP*RMAX);
 	hoverpitchkd = (uint16_t) (hover.HoverPitchKD*SCALEGYRO*RMAX);
 	pitchAccel_1.WW =  0 ;
 }
 
 void save_pitchCntrl(void)
 {
-	gains.Pitchgain      = (float)pitchgain         / (RMAX);
+	gains.PitchKP      = (float)pitchkp         / (RMAX);
 	gains.PitchKD        = (float)pitchkd           / (SCALEGYRO*RMAX);
 	gains.PitchKA        = (float)pitchka           / (SCALEGYRO*RMAX);
-	hover.HoverPitchGain = (float)hoverpitchgain    / (RMAX);
+	hover.HoverPitchKP = (float)hoverpitchkp    / (RMAX);
 	hover.HoverPitchKD   = (float)hoverpitchkd      / (SCALEGYRO*RMAX);
 //	gains.RudderElevMix  = (float)rudderElevMixGain / (RMAX);
 //	gains.RollElevMix    = (float)rollElevMixGain   / (RMAX);
@@ -110,7 +110,7 @@ static void normalPitchCntrl(void)
 
 	if (settings._.PitchStabilization && state_flags._.pitch_feedback)
 	{
-		pitchAccum.WW = (__builtin_mulsu(tiltError[0], pitchgain) )
+		pitchAccum.WW = (__builtin_mulsu(tiltError[0], pitchkp) )
 		              - __builtin_mulsu(desiredRotationRateRadians[0], pitchfdfwd);
 //gfm reports in inner loop		              + __builtin_mulsu(rotationRateError[0], pitchkd );
 //		pitch_control = (int32_t)pitchAccum._.W1 + (int32_t) elevatorLoadingTrim;
@@ -118,9 +118,9 @@ static void normalPitchCntrl(void)
 	else
 	{
 		pitch_control = 0;
-                  outerpitch_control = 0;
+        outerpitch_control = 0;
 	}
-         outerpitch_control = (int32_t)pitchAccum._.W1 + (int32_t) elevatorLoadingTrim;
+    outerpitch_control = (int32_t)pitchAccum._.W1 + (int32_t) elevatorLoadingTrim;
 }
 
 static void hoverPitchCntrl(void)
@@ -147,7 +147,7 @@ static void hoverPitchCntrl(void)
 		{
 			pitchToWP = 0;
 		}
-		pitchAccum.WW = __builtin_mulsu(rmat[8] + HOVERPOFFSET - pitchToWP + manualPitchOffset, hoverpitchgain)
+		pitchAccum.WW = __builtin_mulsu(rmat[8] + HOVERPOFFSET - pitchToWP + manualPitchOffset, hoverpitchkp)
 		              + __builtin_mulus(hoverpitchkd, pitchrate);
 	}
 	else
@@ -160,7 +160,7 @@ void InnerpitchCntrl(void)
 {
 	union longww gyroPitchFeedback;
 	union longww gyroAccelFeedback;
-        if (state_flags._.pitch_feedback)
+    if (state_flags._.pitch_feedback)
 	{
         gyroAccelFeedback.WW = __builtin_mulus(pitchkafilter ,rotationRateError[0]);
         pitchAccel_1.WW = __builtin_mulus(59297 , pitchAccel_1._.W1);
@@ -171,7 +171,8 @@ void InnerpitchCntrl(void)
 	else
 	{
 	gyroPitchFeedback.WW = 0;
-        gyroAccelFeedback.WW = 0;
+    gyroAccelFeedback.WW = 0;
 	}
-	pitch_control = outerpitch_control + (int32_t)gyroPitchFeedback._.W1 + (int32_t)gyroAccelFeedback._.W1;
+	//pitch_control = outerpitch_control + (int32_t)gyroPitchFeedback._.W1 + (int32_t)gyroAccelFeedback._.W1;
+	pitch_control = outerpitch_control + (int32_t)gyroPitchFeedback._.W1 ;
 }

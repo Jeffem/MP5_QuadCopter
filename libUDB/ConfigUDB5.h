@@ -30,7 +30,7 @@
 // gfm : SCALEGYRO is defined by the relation
 // SCALEGYRO=GYRO_RANGE/1024/6*HEARTBEAT thus 3.255 instead of 3.0016?
 #define SCALEGYRO           3.0016  // 500 degree/second range
-// gfm : SCALEACCEL=5280/RMAX/ACCEL_RANGE ; 5280 is defined for GRAVITY in libUDB_defines.h
+// gfm : SCALEACCEL=5280/1024/ACCEL_RANGE ; 5280 is defined for GRAVITY in libUDB_defines.h
 #define SCALEACCEL          1.29    // 4 g range
 
 #define NUM_ANALOG_INPUTS   1
@@ -95,5 +95,6 @@
 #define IC_PIN8             _RD15
 
 #if (USE_LIDAR_ALTITUDE	== 1)
-#define LIDAR_Trigger LATAbits.LATA4//Sortie trigger Lidar sur RA4
+//#define LIDAR_Trigger LATAbits.LATA4//Sortie trigger Lidar sur RA4
+#define LIDAR_Trigger _LATC1//Sortie trigger Lidar sur RC1=AN16
 #endif

@@ -49,7 +49,7 @@
 #undef ROLLKD
 #undef AILERON_BOOST
 
-#undef PITCHGAIN
+#undef PITCHKP
 #undef PITCHKD
 #undef RUDDER_ELEV_MIX
 #undef ROLL_ELEV_MIX
@@ -78,7 +78,7 @@
 
 #undef HOVER_ROLLKP
 #undef HOVER_ROLLKD
-#undef HOVER_PITCHGAIN
+#undef HOVER_PITCHKP
 #undef HOVER_PITCHKD
 #undef HOVER_PITCH_OFFSET
 #undef HOVER_YAWKP
@@ -92,7 +92,7 @@
 #define ROLLKP gains.RollKP
 #define ROLLKD gains.RollKD
 #define AILERON_BOOST gains.AileronBoost
-#define PITCHGAIN gains.Pitchgain
+#define PITCHKP gains.Pitchkp
 #define PITCHKD gains.PitchKD
 #define RUDDER_ELEV_MIX gains.RudderElevMix
 #define ROLL_ELEV_MIX gains.RollElevMix
@@ -118,7 +118,7 @@
 
 #define HOVER_ROLLKP gains.HoverRollKP
 #define HOVER_ROLLKD gains.HoverRollKD
-#define HOVER_PITCHGAIN gains.HoverPitchGain
+#define HOVER_PITCHKP gains.HoverPitchKP
 #define HOVER_PITCHKD gains.HoverPitchKD
 #define HOVER_PITCH_OFFSET gains.HoverPitchOffset
 #define HOVER_YAWKP gains.HoverYawKP

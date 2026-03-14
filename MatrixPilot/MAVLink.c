@@ -826,12 +826,12 @@ void mavlink_output_40hz(void)
 	float earth_yaw_velocity;       // radians / sec with respect to earth
 	int16_t accum;                  // general purpose temporary storage
 	uint64_t gps_time;              // general purpose temporary storage
-	union longbbbb accum_A_long;    // general purpose temporary storage
+//	union longbbbb accum_A_long;    // general purpose temporary storage
 //	union longbbbb accum_B_long;    // general purpose temporary storage
 	uint8_t mavlink_base_mode;      // System mode, see MAV_MODE ENUM in mavlink/include/mavlink_types.h
 	uint32_t mavlink_custom_mode;   // Custom Status mode specific to the UDB / MatrixPilot
 //	int32_t lat, lon, alt, relative_alt = 0, baro = 0;
-	int32_t lat, lon, relative_alt = 0, baro = 0;
+	int32_t relative_alt = 0;
 	uint16_t mavlink_heading = 0;
 extern int control_mode;
 
@@ -897,20 +897,20 @@ extern int control_mode;
 			mavlink_base_mode = MAV_MODE_TEST_ARMED; // Unknown state
 			mavlink_custom_mode = MAV_CUSTOM_UDB_MODE_MANUAL;
 		}
-        //gfm control lode displayed on the bit 2 of mavlink_base_mode
+        //gfm control mode displayed on the bit 2 of mavlink_base_mode
         if (control_mode != TILT_MODE) mavlink_base_mode  = mavlink_base_mode +2;
-        mavlink_base_mode = dcm_flags._.dead_reckon_enable;
+//        mavlink_base_mode = dcm_flags._.dead_reckon_enable;
 //		mavlink_msg_heartbeat_send(MAVLINK_COMM_0, MAV_TYPE_FIXED_WING, MAV_AUTOPILOT_UDB, mavlink_base_mode, mavlink_custom_mode, MAV_STATE_ACTIVE);
 //gfm IMU altitude sent instead of custom_mode,gps_fix_type instead of MAV_TYPE_QUADROTOR
                 //udb_cpu_load() instead of MAV_AUTOPILOT_UDB and Lidar/32 instead of MAV_STATE_ACTIVE
-		mavlink_custom_mode =(int32_t)IMUlocationz.WW >> 6;//Imu altitude in mm
+		mavlink_custom_mode =(int32_t)IMUlocationz._.W1;//Imu altitude in mm
         #if (USE_LIDAR_ALTITUDE	== 1)
 
                 mavlink_msg_heartbeat_send(MAVLINK_COMM_0, gps_fix_type, tailFlash, mavlink_base_mode, mavlink_custom_mode, (uint8_t)((udb_pwIn[LIDAR_INPUT_CHANNEL]-lidar0) >> 6));
 #else
                 mavlink_msg_heartbeat_send(MAVLINK_COMM_0, gps_fix_type, tailFlash, mavlink_base_mode, mavlink_custom_mode, 0);
 #endif
-        //mavlink_msg_heartbeat_send(MAVLINK_COMM_0, (uint8_t)((udb_pwIn[7]-lidar0) && 0x00FF), udb_cpu_load(), mavlink_base_mode, mavlink_custom_mode, (uint8_t)((udb_pwIn[7]-lidar0) >> 8));
+        //                mavlink_msg_heartbeat_send(MAVLINK_COMM_0, (uint8_t)((udb_pwIn[7]-lidar0) && 0x00FF), udb_cpu_load(), mavlink_base_mode, mavlink_custom_mode, (uint8_t)((udb_pwIn[7]-lidar0) >> 8));
 		//mavlink_msg_heartbeat_send(mavlink_channel_t chan, uint8_t type, uint8_t autopilot, uint8_t base_mode, uint32_t custom_mode, uint8_t system_status)
 	}
 	// GPS RAW INT - Data from GPS Sensor sent as raw integers.
@@ -920,13 +920,16 @@ extern int control_mode;
 		int16_t gps_fix_type;
 		if (gps_nav_valid()){
 			gps_fix_type = 3;
-            gps_time = ((uint64_t)(week_no.BB) << 32) + tow.WW;
+            gps_time = tow.WW;
         }
 		else{
 			gps_fix_type = 0;
             gps_time = usec;
         }
-		mavlink_msg_gps_raw_int_send(MAVLINK_COMM_0, gps_time, gps_fix_type, lat_gps.WW, lon_gps.WW, alt_sl_gps.WW, hdop, 65535, sog_gps.BB, cog_gps.BB, svs);
+if (differential_gps())
+            mavlink_msg_gps_raw_int_send(MAVLINK_COMM_0, gps_time, gps_fix_type, relposN.WW, relposE.WW, relposD.WW, hdop, 65535, sog_gps.BB, cog_gps.BB, svs);
+else
+            mavlink_msg_gps_raw_int_send(MAVLINK_COMM_0, gps_time, gps_fix_type, lat_gps.WW, lon_gps.WW, alt_sl_gps.WW, hdop, 65535, sog_gps.BB, cog_gps.BB, svs);
 	}
 
 	// GLOBAL POSITION INT - derived from fused sensors
@@ -934,7 +937,7 @@ extern int control_mode;
 	spread_transmission_load = 6;
 	if (mavlink_frequency_send(streamRates[MAV_DATA_STREAM_POSITION], mavlink_counter_40hz + spread_transmission_load))
 	{
-		accum_A_long.WW = IMUlocationy._.W1 + (int32_t)(lat_origin.WW / 90.0); // meters North from Equator
+/*		accum_A_long.WW = IMUlocationy._.W1 + (int32_t)(lat_origin.WW / 90.0); // meters North from Equator
 		lat = (int32_t) accum_A_long.WW * 90; // degrees North from Equator
 		if (cos_lat == 0)
 		{
@@ -943,27 +946,23 @@ extern int control_mode;
 		}
 		else
 		{
-/*			accum_A_long.WW = IMUlocationx._.W1;
+			accum_A_long.WW = IMUlocationx._.W1;
 			accum_A_long.WW = accum_A_long.WW * 16384;      // Compiler uses (shift left 14) for this multiplication
 			accum_B_long.WW = (accum_A_long.WW + 8192) / cos_lat;   // 8192 improves rounding accuracy
 			lon = lon_origin.WW + (accum_B_long.WW * 90);   // degrees
-*/
-			lon = (int32_t)(IMUlocationx.WW >> 6) ;   // cm
 		}
-        lat = (int32_t)(IMUlocationy.WW >> 6);//cm
- 		relative_alt = (int32_t)(IMUlocationz.WW >> 6);// in cm
+*/
 //		relative_alt =IMUlocationz._.W1 * 1000;
-//		relative_alt =(int32_t)IMUlocationz.WW >> 6;
 //gfm		alt = relative_alt + (alt_origin.WW * 10);          // In millimeters; more accurate if used IMUlocationz._.W0
 //gfm alt is replaced by the altitude fusion output and relative_alt by the baro output
-        baro = (int32_t) barometer_agl_altitude;
+        //baro = (int32_t) barometer_agl_altitude;
 
 		mavlink_heading = get_geo_heading_angle() * 100;    // mavlink global position expects heading value x 100
 // gfm		mavlink_msg_global_position_int_send(MAVLINK_COMM_0, msec, lat, lon, alt, relative_alt,
-		mavlink_msg_global_position_int_send(MAVLINK_COMM_0, msec, lat, lon, estimated_altitude, baro,
+		mavlink_msg_global_position_int_send(MAVLINK_COMM_0, msec, (int32_t)(IMUlocationy.WW), (int32_t)(IMUlocationx.WW),(int32_t)(IMUlocationz.WW),estimated_altitude,
 //		    -IMUvelocityy._.W1, IMUvelocityx._.W1, vze_fusion, //  IMUVelocity  normal units are in cm / second, >0 pitching up
-//		mavlink_msg_global_position_int_send(MAVLINK_COMM_0, msec, IMUlocationx.WW, IMUlocationy.WW, fusion, baro,
-		    -IMUvelocityy._.W1, IMUvelocityx._.W1, -IMUvelocityz._.W1, //  IMUVelocity  normal units are in cm / second, >0 pitching up
+//		mavlink_msg_global_position_int_send(MAVLINK_COMM_0, msec, IMUlocationx.WW, IMUlocationy.WW, estimated_altitude, baro,
+		    -IMUvelocityy._.W1, (int16_t)(-vze_fusion), -IMUvelocityz._.W1, //  IMUVelocity  normal units are in cm / second, >0 pitching up
 		    mavlink_heading); // heading should be from 0 to 35999 meaning 0 to 359.99 degrees.
 		// mavlink_msg_global_position_int_send(mavlink_channel_t chan, uint32_t time_boot_ms, int32_t lat, int32_t lon, int32_t alt,
 		//   int32_t relative_alt, int16_t vx, int16_t vy, int16_t vz, uint16_t hdg)
@@ -972,7 +971,7 @@ extern int control_mode;
 	// ATTITUDE
 	//  Roll: Earth Frame of Reference
 	spread_transmission_load = 12;
-	if (mavlink_frequency_send(streamRates[MAV_DATA_STREAM_POSITION], mavlink_counter_40hz + spread_transmission_load))
+	if (mavlink_frequency_send(streamRates[MAV_DATA_STREAM_RAW_SENSORS], mavlink_counter_40hz + spread_transmission_load))
 	{
 		matrix_accum.x = rmat[8];
 		matrix_accum.y = rmat[6];
@@ -1091,7 +1090,7 @@ extern int control_mode;
 		    (uint16_t)((udb_pwOut[2]) >> 1),
 		    (uint16_t)((udb_pwOut[3]) >> 1),
 		    (uint16_t)((udb_pwOut[4]) >> 1),
-            (uint8_t) ((udb_pwOut[5]) >> 3),//gfm test TailFlash servo output
+            (uint8_t) ((udb_pwOut[5]) >> 4),//gfm test TailFlash servo output divided by 16 to be compatible with a byte
 //		    (uint8_t)0,     // port number for more than 8 servos
 #if (ANALOG_RSSI_INPUT_CHANNEL != CHANNEL_UNUSED)
 		    (uint8_t)rc_signal_strength);

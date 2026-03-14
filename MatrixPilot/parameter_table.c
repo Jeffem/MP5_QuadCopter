@@ -39,7 +39,7 @@ const mavlink_parameter mavlink_parameters_list[] = {
 	{"PID_ROLLKP", {.param_float=0.0}, {.param_float=0.5}, UDB_TYPE_Q14, PARAMETER_READWRITE, (void*)&rollkp, sizeof(rollkp) },
 	{"PID_ROLLKD", {.param_float=0.0}, {.param_float=0.5}, UDB_TYPE_GYROSCALE_Q14, PARAMETER_READWRITE, (void*)&rollkd, sizeof(rollkd) },
 	{"PID_ROLLKA", {.param_float=0.0}, {.param_float=0.5}, UDB_TYPE_GYROSCALE_Q14, PARAMETER_READWRITE, (void*)&rollka, sizeof(rollka) },
-	{"PID_PITCHGAIN", {.param_float=0.0}, {.param_float=0.5}, UDB_TYPE_Q14, PARAMETER_READWRITE, (void*)&pitchgain, sizeof(pitchgain) },
+	{"PID_PITCHKP", {.param_float=0.0}, {.param_float=0.5}, UDB_TYPE_Q14, PARAMETER_READWRITE, (void*)&pitchkp, sizeof(pitchkp) },
 	{"PID_PITCHKD", {.param_float=0.0}, {.param_float=0.5}, UDB_TYPE_GYROSCALE_Q14, PARAMETER_READWRITE, (void*)&pitchkd, sizeof(pitchkd) },
 	{"PID_PITCHKA", {.param_float=0.0}, {.param_float=0.5}, UDB_TYPE_GYROSCALE_Q14, PARAMETER_READWRITE, (void*)&pitchka, sizeof(pitchka) },
 	{"PID_YAWKPRUD", {.param_float=0.0}, {.param_float=0.5}, UDB_TYPE_Q14, PARAMETER_READWRITE, (void*)&yawkprud, sizeof(yawkprud) },

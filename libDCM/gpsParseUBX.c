@@ -29,10 +29,6 @@
 #include "hilsim.h"
 
 // Ajout gfm pout Aid_Ini
-extern union intbb week_no_;
-extern union longbbbb lat_gps_, lon_gps_;
-extern union longbbbb alt_sl_gps_;
-extern union longbbbb tow_;
 union longbbbb p_Acc_;// 30m
 union longbbbb time_Acc_;
 union longbbbb f_Acc_;
@@ -44,27 +40,6 @@ union intbb tncfg_;
 uint8_t CK_A;
 uint8_t CK_B;
 uint16_t  AID_INI_length = 56;
-
-uint8_t  AID_INI[] = {
-	0xB5, 0x62, // Header
-	0x0B, 0x01, // ID
-	0x30, 0x00, // Payload length
-	0x5A, 0x9F, 0x1B, 0x1d, //lon
-	0x6C, 0x6D, 0x6F, 0x01, //lat
-	0xD8, 0x27, 0x00, 0x00, //alt
-	0xB8, 0x0B, 0x00, 0x00, //p_Acc
-	0x00, 0x00, //tncfg
-	0x00, 0x00, //week_no
-	0x00, 0x00,0x00, 0x00, //tow
-	0x00, 0x00,0x00, 0x00, //ftow
-	0x00, 0x00,0x00, 0x00, //time_Acc
-	0x00, 0x00,0x00, 0x00, //f_Acc
-	0x00, 0x00,0x00, 0x00, //clkd
-	0x00, 0x00,0x00, 0x00, //clkd_Acc
-	0x21, 0x00,0x00, 0x00, //Flags
-	0x59, 0xE7  // Checksum
-};
-
 // PVT Variables needed
 union intbb year_, pdop_;
 uint8_t month_, day_, hour_, min_, sec_;
@@ -80,37 +55,6 @@ union longbbbb 	accN_,accE_,accD_,accL_,accH_;
 union longbbbb 	FlagsRPN_;     // 
 
 // fin ajout gfm
-
-// modif gfm : mmessage AID_INI definition
-uint8_t* const msg_AID_INI_parse[] = {
-	//0xB5, 0x62, // Header
-	//0x0B, 0x01, // ID
-	//0x30, 0x00, // Payload length
-	&lon_gps_.__.B0, &lon_gps_.__.B1,
-	&lon_gps_.__.B2, &lon_gps_.__.B3,                 // lon
-	&lat_gps_.__.B0, &lat_gps_.__.B1,
-	&lat_gps_.__.B2, &lat_gps_.__.B3,                   // lat
-	&alt_sl_gps_.__.B0, &alt_sl_gps_.__.B1,
-	&alt_sl_gps_.__.B2, &alt_sl_gps_.__.B3,             // hMSL
-	&p_Acc_.__.B0, &p_Acc_.__.B1,
-        &p_Acc_.__.B2, &p_Acc_.__.B3,                       // pAcc
-	&tncfg_._.B0,&tncfg_._.B1,                          //tncfg
-	&week_no_._.B0, &week_no_._.B1,                     // week
-	&tow_.__.B0, &tow_.__.B1, &tow_.__.B2, &tow_.__.B3, // iTOW
-	&ftow_.__.B0, &ftow_.__.B1, &ftow_.__.B2, &ftow_.__.B3, // fTOW
-	&time_Acc_.__.B0, &time_Acc_.__.B1,
-	&time_Acc_.__.B2, &time_Acc_.__.B3,                 // Time Accuracy
-	&f_Acc_.__.B0, &f_Acc_.__.B1,
-	&f_Acc_.__.B2, &f_Acc_.__.B3,                       // f Accuracy
-	&clkd_.__.B0, &clkd_.__.B1,
-	&clkd_.__.B2, &clkd_.__.B3,                         // Clock Drift
-	&clkd_Acc_.__.B0, &clkd_Acc_.__.B1,
-	&clkd_Acc_.__.B2, &clkd_Acc_.__.B3,                 // ClkD Accuracy
-	&Flags_.__.B0, &Flags_.__.B1,
-	&Flags_.__.B2, &Flags_.__.B3,                       // Flags
-	//0xCC, 0x0B  // Checksum
-};
-//extern uint8_t  AID_INI[];
 void send_msg_AID_INI(uint8_t* AID_INI)
 {
 	CK_A = 0;
@@ -573,7 +517,7 @@ uint8_t* const msg_VELNED_parse[] = {
 	&un, &un, &un, &un,                                 // cAcc
 };
 // modif gfm : mmessage AID_INI definition
-/*
+
 uint8_t* const msg_AID_INI_parse[] = {
 	//0xB5, 0x62, // Header
 	//0x0B, 0x01, // ID
@@ -602,6 +546,7 @@ uint8_t* const msg_AID_INI_parse[] = {
 	&Flags_.__.B2, &Flags_.__.B3,                       // Flags
 	//0xCC, 0x0B  // Checksum
 };
+
 uint8_t  AID_INI[] = {
 	0xB5, 0x62, // Header
 	0x0B, 0x01, // ID
@@ -621,7 +566,7 @@ uint8_t  AID_INI[] = {
 	0x21, 0x00,0x00, 0x00, //Flags
 	0x59, 0xE7,  // Checksum
 };
-*/
+
 //extern uint8_t  AID_INI[];
 uint8_t* const msg_PVT_parse[] = {
 	&tow_.__.B0, &tow_.__.B1, &tow_.__.B2, &tow_.__.B3,// iTOW
@@ -656,18 +601,18 @@ uint8_t* const msg_RELPOSNED_parse[] = {
     &un,//reserved0
     &un, &un, //ref Station ID
 	&tow_.__.B0, &tow_.__.B1, &tow_.__.B2, &tow_.__.B3,// iTOW
-	&relposN_.__.B0, &relposN_.__.B1,&relposN_.__.B2, &relposN_.__.B3, // North component of relative position vector
-	&relposE_.__.B0, &relposE_.__.B1,&relposE_.__.B2, &relposE_.__.B3, // Est component of relative position vector
-	&relposD_.__.B0, &relposD_.__.B1, &relposD_.__.B2, &relposD_.__.B3,// Down component of relative position vector
-	&relposLength_.__.B0, &relposLength_.__.B1,	&relposLength_.__.B2, &relposLength_.__.B3,// Length  of relative position vector
-	&relposHead_.__.B0, &relposHead_.__.B1, &relposHead_.__.B2, &relposHead_.__.B3,     // Heading of relative position vector Accuracy
+	&relposN_.__.B0, &relposN_.__.B1,&relposN_.__.B2, &relposN_.__.B3, // North component of relative position vector cm
+	&relposE_.__.B0, &relposE_.__.B1,&relposE_.__.B2, &relposE_.__.B3, // Est component of relative position vector cm
+	&relposD_.__.B0, &relposD_.__.B1, &relposD_.__.B2, &relposD_.__.B3,// Down component of relative position vector cm
+	&relposLength_.__.B0, &relposLength_.__.B1,	&relposLength_.__.B2, &relposLength_.__.B3,// Length  of relative position vector cm
+	&relposHead_.__.B0, &relposHead_.__.B1, &relposHead_.__.B2, &relposHead_.__.B3,     // Heading of relative position vector Accuracy 10-5 deg
 	&un, &un, &un, &un,                                 // reserved
-	&relposHPN_,&relposHPE_,&relposHPD_,&relposHPL_,     // High-precision components of relative position vector.
-	&accN_.__.B0, &accN_.__.B1,&accN_.__.B2, &accN_.__.B3, // Accuracy of relative position North component
-	&accE_.__.B0, &accE_.__.B1,&accE_.__.B2, &accE_.__.B3, // Accuracy of relative position East component
-	&accD_.__.B0, &accD_.__.B1, &accD_.__.B2, &accD_.__.B3,     // Accuracy of relative position Down component
-	&accL_.__.B0, &accL_.__.B1,	&accL_.__.B2, &accL_.__.B3,// Accuracy of relative position Length
-	&accH_.__.B0, &accH_.__.B1, &accH_.__.B2, &accH_.__.B3,     // Accuracy of relative position Heading
+	&relposHPN_,&relposHPE_,&relposHPD_,&relposHPL_,     // High-precision components of relative position vector 0.1 mm.
+	&accN_.__.B0, &accN_.__.B1,&accN_.__.B2, &accN_.__.B3, // Accuracy of relative position North component mm
+	&accE_.__.B0, &accE_.__.B1,&accE_.__.B2, &accE_.__.B3, // Accuracy of relative position East component mm
+	&accD_.__.B0, &accD_.__.B1, &accD_.__.B2, &accD_.__.B3,     // Accuracy of relative position Down component mm
+	&accL_.__.B0, &accL_.__.B1,	&accL_.__.B2, &accL_.__.B3,// Accuracy of relative position Length mm
+	&accH_.__.B0, &accH_.__.B1, &accH_.__.B2, &accH_.__.B3,     // Accuracy of relative position Heading 10-5 deg
 	&un, &un, &un, &un,                                 // reserved
 	&FlagsRPN_.__.B0, &FlagsRPN_.__.B1, &FlagsRPN_.__.B2, &FlagsRPN_.__.B3     // Flags RelPosNED
 };
@@ -749,8 +694,14 @@ void gps_startup_sequence(int16_t gpscount)
 
 boolean gps_nav_valid(void)
 {
-	return (nav_valid_ == 3);
+	return (nav_valid_ >= 3);
 }
+
+boolean differential_gps(void)
+{
+	return ( (FlagsRPN_.__.B0 & 2 )== 2) ;
+}
+
 
 /*
 int16_t hex_count = 0;
@@ -950,6 +901,7 @@ static void msg_PL1(uint8_t gpschar)
 					}
 					msg_parse = &msg_AID_INI;    // TODO: this does not look right (wipes out error setting above) - RobD
 					break;
+				}
 				case 0x3C : { // NAV_RELPOSNED message
 					if (payloadlength.BB  == NUM_POINTERS_IN(msg_RELPOSNED_parse))
 					{
@@ -963,7 +915,6 @@ static void msg_PL1(uint8_t gpschar)
 					break;
 				}
 // fin modif gfm
-				}
 #if (HILSIM == 1)
 				case 0xAB : { // NAV_BODYRATES message - THIS IS NOT AN OFFICIAL UBX MESSAGE
 					// WE ARE FAKING THIS FOR HIL SIMULATION
@@ -1272,7 +1223,11 @@ void gps_update_basic_data(void)
 void gps_commit_data(void)
 {
 	//bin_out(0xFF);
-	week_no         = week_no_;
+	date_gps_.WW=100*year_.BB+100*month_+day_;
+    if (week_no.BB == 0)
+	{
+		week_no.BB = calculate_week_num(date_gps_.WW);
+	}
 	tow             = tow_;
 	lat_gps         = lat_gps_;
 	lon_gps         = lon_gps_;
@@ -1283,6 +1238,9 @@ void gps_commit_data(void)
 	climb_gps.BB    = - velD_._.W0;            // SIRF uses 2 byte climb rate, UBX provides 4 bytes
 	hdop            = (uint8_t)(hdop_.BB / 20);     // SIRF scales HDOP by 5, UBX by 10^-2
 	vdop		= (uint8_t)(vAcc_.WW / 20);    // Vertical accuracy is not vertical DOP but can be used instead
+    relposN = relposN_;
+    relposE = relposE_;
+    relposD = relposD_;
 #else    
 	sog_gps.BB      = sog_gps_._.W0;                // SIRF uses 2 byte SOG, UBX provides 4 bytes
 	cog_gps.BB      = (uint16_t)(cog_gps_.WW / 1000);// SIRF uses 2 byte COG, 10^-2 deg, UBX provides 4 bytes, 10^-5 deg
@@ -1322,9 +1280,9 @@ void init_gps_data(void)
 	tncfg_.BB    = 0;          //tncfg
 	ftow_.WW     = 0;
 	time_Acc_.WW =0;
-        f_Acc_.WW    =0;           // f Accuracy
+    f_Acc_.WW    =0;           // f Accuracy
 	clkd_.WW     =0;
-        clkd_Acc_.WW =0;           // ClkD Accuracy
+    clkd_Acc_.WW =0;           // ClkD Accuracy
 	Flags_.__.B0 =0x21;
     Flags_.__.B1 =0;
 	Flags_.__.B2 =0;
@@ -1333,7 +1291,10 @@ void init_gps_data(void)
 	lat_gps_         = lat_origin;
 	lon_gps_        = lon_origin;
 	alt_sl_gps_.WW   = alt_origin.WW;          // SIRF provides altMSL in cm, UBX provides it in mm gfm mm->cm
-                                            // à faire dans la fonction get_fixed_origin de flightplan.c
+    relposN_.WW = 0;
+    relposE_.WW = 0;
+    relposD_.WW = 0;
+    // à faire dans la fonction get_fixed_origin de flightplan.c
 }
 
 #if (HILSIM == 1)

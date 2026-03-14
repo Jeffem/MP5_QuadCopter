@@ -26,44 +26,49 @@
 #include "estAltitude.h"  //USE_BAROMETER_ALTITUDE
 #include "mathlibNAV.h"
 #include "estWind.h"
-
-
+// modif gfm
 #ifdef USE_EXTENDED_NAV
 static void location_plane(int32_t* location)
 {
 	location[1] = ((lat_gps.WW - lat_origin.WW)/90); // in meters, range is about 20 miles
 	location[0] = long_scale((lon_gps.WW - lon_origin.WW)/90, cos_lat);
-#if (USE_BAROMETER_ALTITUDE == 1 ) 
-#warning "using pressure altitude instead of GPS altitude"
+    #if (USE_BAROMETER_ALTITUDE == 1 ) 
+    #warning "using pressure altitude instead of GPS altitude"
 	// division by 100 implies alt_origin is in centimeters; not documented elsewhere
 	// longword result = (longword/10 - longword)/100 : range
 	location[2] = ((get_barometer_altitude()/10) - alt_origin.WW)/100; // height in meters
-#else
+    #else
 	location[2] = (alt_sl_gps.WW - alt_origin.WW)/100; // height in meters
-#endif // USE_BAROMETER_ALTITUDE
+    #endif // USE_BAROMETER_ALTITUDE
 
 }
 #else // !USE_EXTENDED_NAV
-static void location_plane(int16_t* location)
+static void location_plane(int32_t* location)
 {
-	union longbbbb accum_nav;
-
-	accum_nav.WW = ((lat_gps.WW - lat_origin.WW)/90); // in meters, range is about 20 miles
+ union longbbbb accum_nav;
+ if(differential_gps()) {
+    location[0] = relposN.WW;
+    location[1] = relposE.WW;
+    location[2] = -relposD.WW;        
+    }
+ else {
+	accum_nav.WW = ((100*(lat_gps.WW - lat_origin.WW))/90); // in cm, range is about 1000 feet
 	location[1] = accum_nav._.W0;
-	accum_nav.WW = long_scale((lon_gps.WW - lon_origin.WW)/90, cos_lat);
+	accum_nav.WW = long_scale((100*(lon_gps.WW - lon_origin.WW))/90, cos_lat);
 	location[0] = accum_nav._.W0;
-#if (USE_BAROMETER_ALTITUDE == 1 ) 
-#warning "using pressure altitude instead of GPS altitude"
+    #if (USE_BAROMETER_ALTITUDE == 1 ) 
+    #warning "using pressure altitude instead of GPS altitude"
 	// division by 100 implies alt_origin is in centimeters; not documented elsewhere
 	// longword result = (longword/10 - longword)/100 : range
 	accum_nav.WW = ((get_barometer_altitude()/10) - alt_origin.WW)/100; // height in meters
-#else
-	accum_nav.WW = (alt_sl_gps.WW - alt_origin.WW)/100; // height in meters
-#endif // USE_BAROMETER_ALTITUDE
+    #else
+	accum_nav.WW = (alt_sl_gps.WW - alt_origin.WW); // height in centimeters
+    #endif // USE_BAROMETER_ALTITUDE
 	location[2] = accum_nav._.W0;
+    }
 }
 #endif // USE_EXTENDED_NAV
-
+// fin modif gfm
 void estLocation(void)
 {
 	static int8_t cog_previous = 64;
@@ -81,7 +86,7 @@ void estLocation(void)
 #ifdef USE_EXTENDED_NAV
 	int32_t location[3];
 #else
-	int16_t location[3];
+	int32_t location[3];
 #endif // USE_EXTENDED_NAV
 	int16_t location_deltaZ;
 	struct relative2D location_deltaXY;
@@ -164,7 +169,9 @@ void estLocation(void)
 	// veclocity_thru_air.x becomes XY air speed as a by product of CORDIC routine in rect_to_polar()
 	air_speed_magnitudeXY = velocity_thru_air.x; // in cm / sec
 
-#if (GPS_RATE == 4)
+#if (GPS_RATE == 10)
+	forward_acceleration = (air_speed_3DGPS - velocity_previous) * 10; // Ublox enters code 10 times per second
+#elif (GPS_RATE == 4)
 	forward_acceleration = (air_speed_3DGPS - velocity_previous) << 2; // Ublox enters code 4 times per second
 #elif (GPS_RATE == 2)
 	forward_acceleration = (air_speed_3DGPS - velocity_previous) << 1; // Ublox enters code 2 times per second

@@ -18,7 +18,7 @@ void parameter_table_init(void)
 	mavlink_parameters_list[1].min.param_float=0.0; mavlink_parameters_list[1].max.param_float=0.5; // rollkd - PID_ROLLKD
 	mavlink_parameters_list[2].min.param_float=0.0; mavlink_parameters_list[2].max.param_float=0.5; // yawkpail - PID_YAWKPAIL
 	mavlink_parameters_list[3].min.param_float=0.0; mavlink_parameters_list[3].max.param_float=0.5; // yawkdail - PID_YAWKDAIL
-	mavlink_parameters_list[4].min.param_float=0.0; mavlink_parameters_list[4].max.param_float=0.5; // pitchgain - PID_PITCHGAIN
+	mavlink_parameters_list[4].min.param_float=0.0; mavlink_parameters_list[4].max.param_float=0.5; // pitchkp - PID_PITCHKP
 	mavlink_parameters_list[5].min.param_float=0.0; mavlink_parameters_list[5].max.param_float=0.5; // pitchkd - PID_PITCHKD
 	mavlink_parameters_list[6].min.param_float=0.0; mavlink_parameters_list[6].max.param_float=0.5; // rollkprud - PID_ROLLKPRUD
 	mavlink_parameters_list[7].min.param_float=0.0; mavlink_parameters_list[7].max.param_float=0.5; // yawkprud - PID_YAWKPRUD

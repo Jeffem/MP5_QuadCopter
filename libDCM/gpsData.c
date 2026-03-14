@@ -45,6 +45,7 @@ union intbb    xvg, yvg, zvg;                     // gps x, y, z velocity
 volatile union intbb hilsim_airspeed;  // referenced in estWind and deadReckoning modules
 
 union longbbbb lat_origin, lon_origin, alt_origin;  // (COULD THIS BETTER BE A VECTOR??)
+union longbbbb relposN_origin, relposE_origin, relposD_origin;  // (COULD THIS BETTER BE A VECTOR??)
 
 ///////////////////////////////////////////////////////////////////////////////
 // WRAP ALL THIS UP INTO A STRUCTURE
@@ -58,6 +59,7 @@ volatile union intbb sog_gps;                                // speed over groun
 volatile union uintbb cog_gps;                               // course over ground
 volatile union intbb climb_gps;                              // climb
 volatile union longbbbb tow;
+volatile union longbbbb relposN, relposE, relposD;        // latitude, longitude, altitude   (COULD THIS BETTER BE A VECTOR??)
 ///////////////////////////////////////////////////////////////////////////////
 // PASS THE STRUCTURE* TO THE gps_commit_data() functions
 

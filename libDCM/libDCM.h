@@ -44,7 +44,7 @@ int16_t GetAofA(void);
 // Functions
 void dcm_init(void);
 void dcm_calibrate(void);
-void dcm_set_origin_location(int32_t o_long, int32_t o_lat, int32_t o_alt);
+void dcm_set_origin_location(int32_t o_long, int32_t o_lat, int32_t o_alt,int32_t o_relposN, int32_t o_relposE, int32_t o_relposD);
 
 
 // Implement this callback to prepare the pwOut values.
@@ -64,8 +64,8 @@ vect3_32t dcm_rel2abs(vect3_32t rel);
 extern union dcm_fbts_word { struct dcm_flag_bits _; int16_t W; } dcm_flags;
 
 // Calibrate for 10 seconds before moving servos
-#define DCM_CALIB_COUNT  10*PID_HZ    // 10 seconds at 40 Hz
-//#define DCM_GPS_COUNT    11*PID_HZ   // 11 seconds at 40 Hz
-#define DCM_GPS_COUNT    25*PID_HZ   // 25 seconds at 40 Hz
+#define DCM_CALIB_COUNT  10*PID_HZ    // 10 seconds
+//#define DCM_GPS_COUNT    11*PID_HZ   // 11 seconds
+#define DCM_GPS_COUNT    50*PID_HZ   // 50 seconds
 
 #endif // LIB_DCM_H

@@ -650,7 +650,7 @@ void telemetry_output_8hz(void)
 			break;
 		case 3:
 			serial_output("F6:P_GAIN=%5.3f:P_KD=%5.3f:RUD_E_MIX=NULL:ROL_E_MIX=NULL:E_BOOST=%3.1f:\r\n",
-			    gains.Pitchgain, gains.PitchKD, gains.ElevatorBoost);
+			    gains.PitchKP, gains.PitchKD, gains.ElevatorBoost);
 			break;
 		case 2:
 			serial_output("F7:Y_KP_R=%5.4f:Y_KD_R=%5.3f:RLKP_RUD=%5.3f:RLKD_RUD=%5.3f:RUD_BOOST=%5.3f:RTL_PITCH_DN=%5.3f:\r\n",

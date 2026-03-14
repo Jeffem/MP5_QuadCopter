@@ -165,7 +165,7 @@ void MAVUDBExtraOutput(void)
 //			serial_output("F6:P_GAIN=%5.3f:P_KD=%5.3f:RUD_E_MIX=NULL:ROL_E_MIX=NULL:E_BOOST=%3.1f:\r\n",
 //				gains.Pitchgain, gains.PitchKD, gains.ElevatorBoost);
 			mavlink_msg_serial_udb_extra_f6_send(MAVLINK_COMM_0,
-				gains.Pitchgain, gains.PitchKD, 0, 0, gains.ElevatorBoost);
+				gains.PitchKP, gains.PitchKD, 0, 0, gains.ElevatorBoost);
 			break;
 		case 2:
 //			serial_output("F7:Y_KP_R=%5.4f:Y_KD_R=%5.3f:RLKP_RUD=%5.3f:RLKD_RUD=%5.3f:RUD_BOOST=%5.3f:RTL_PITCH_DN=%5.3f:\r\n",

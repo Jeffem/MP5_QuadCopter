@@ -100,6 +100,7 @@ void gps_startup_sequence(int16_t gpscount);
 
 // Is our gps data good enough for navigation?
 boolean gps_nav_valid(void);
+boolean differential_gps(void);
 
 // Called once each time the GPS reports a new location.
 // After dead reckoning is complete, this callback may go away.

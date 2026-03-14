@@ -59,9 +59,13 @@ union longww throttle_error_integral = { 0 };
 #define PITCHHEIGHTGAIN     ((PITCHATMAX - PITCHATMIN) / (altit.HeightMargin*2.0))
 
 //gfm 1.5 replaced by 1.35 to adapt HEIGHTTHROTTLEGAIN at the full stick course
-#define HEIGHTTHROTTLEGAIN  ((1.35*(altit.HeightTargetMax-altit.HeightTargetMin)* 1024.0) / SERVORANGE)
+#define HEIGHTTHROTTLEGAIN  (128*(altit.HeightTargetMax-altit.HeightTargetMin)) / (SERVORANGE-(DEADBAND >>1))
+#ifdef SK450
 #define Neutral 700 //Nominal value for SK450 with 3S batterie
-
+#endif
+#ifdef spedix
+#define Neutral 700 //Nominal value for SK450 with 3S batterie
+#endif
 static void normalAltitudeCntrl(void);
 #if AIRFRAME_TYPE != AIRFRAME_QUAD
 static void manualThrottle(int16_t throttleIn);
@@ -121,7 +125,7 @@ void init_altitudeCntrl(void)
         throttle_error_integral.WW = 0; //initialization of the integrator
         desiredHeight_1     = HEIGHT_TARGET_MIN;
         throttle_control = Neutral;
-#define DHRATEMAX 2000/PID_HZ //MAximum rate for the desired height = 2m/s thus 50mm per 25 ms (1/PID_HZ)
+#define DHRATEMAX 200/PID_HZ //MAximum rate for the desired height = 2m/s thus 50mm per 25 ms (1/PID_HZ)
         //Butterworth filter coefficients for cutoff frequency 30 Hz and TSamp=5 ms
         C[1][1]=(int16_t)(0.672740911*RMAX);C[1][2]=(int16_t)(0.89765794*RMAX);
         C[2][1]=(int16_t)(-0.14453520*RMAX);C[2][2]=(int16_t)(-0.5271869*RMAX);
@@ -296,10 +300,10 @@ static void normalAltitudeCntrl(void)
 		{
 			//Use the throttle stick value to determine desiredHeight in 1/10.24ème de cm, quasi mm
 			desiredHeight = ((__builtin_mulss((int16_t)(HEIGHTTHROTTLEGAIN), throttleInOffset - ((int16_t)(DEADBAND)))) >> 8)
-			                + ((int16_t)(HEIGHT_TARGET_MIN*10));
+			                + ((int16_t)(HEIGHT_TARGET_MIN));
 
-			if (desiredHeight < (int16_t)(HEIGHT_TARGET_MIN*10)) desiredHeight = (int16_t)(HEIGHT_TARGET_MIN*10);
-			if (desiredHeight > (int16_t)(HEIGHT_TARGET_MAX*10)) desiredHeight = (int16_t)(HEIGHT_TARGET_MAX*10);
+			if (desiredHeight < (int16_t)(HEIGHT_TARGET_MIN)) desiredHeight = (int16_t)(HEIGHT_TARGET_MIN);
+			if (desiredHeight > (int16_t)(HEIGHT_TARGET_MAX)) desiredHeight = (int16_t)(HEIGHT_TARGET_MAX);
                             //Rate limiter to command no more than 2 m/s
                             if (desiredHeight-desiredHeight_1 > DHRATEMAX) desiredHeight=desiredHeight_1+DHRATEMAX;
                             if (desiredHeight-desiredHeight_1 < -DHRATEMAX) desiredHeight=desiredHeight_1-DHRATEMAX;
@@ -329,7 +333,7 @@ else
           IntegthrottleAccum.WW = 0;
           // desiredHeight_1 is initialized at the current throttle stick position during manual mode
 	desiredHeight_1 = ((__builtin_mulss((int16_t)(HEIGHTTHROTTLEGAIN), throttleInOffset - ((int16_t)(DEADBAND)))) >> 8)
-			                + ((int16_t)(HEIGHT_TARGET_MIN*10));
+			                + ((int16_t)(HEIGHT_TARGET_MIN));
 
    }
 outeraltitude_control = throttleAccum._.W1+Neutral+IntegthrottleAccum._.W1;
@@ -532,9 +536,9 @@ void InneraltitudeCntrl(void)
         if (state_flags._.altitude_hold_throttle || state_flags._.altitude_hold_pitch)
 	{
         Filter(&accelEarthFiltered,accelEarth[2],2,C,D);
-        AccelFeedback.WW = __builtin_mulus(throttleka , accelEarthFiltered)<<3 ;
+        AccelFeedback.WW = __builtin_mulus(throttleka , accelEarthFiltered) ;
 //        AccelFeedback.WW = __builtin_mulus(throttleka , accelEarth[2])<<3 ;
-        speedFeedback.WW = __builtin_mulus(throttlekd , IMUvelocityz._.W1) << 5;//IMUvelocityz._.W1 in cm/s, positive upward
+        speedFeedback.WW = __builtin_mulus(throttlekd , IMUvelocityz._.W1) << 2;//IMUvelocityz._.W1 in mm/s, positive upward
         }
         else
         {

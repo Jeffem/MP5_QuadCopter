@@ -38,6 +38,7 @@ extern int8_t calculated_heading;           // takes into account wind velocity
 extern volatile union intbb hilsim_airspeed;  // referenced in estWind and deadReckoning modules
 
 extern union longbbbb lat_origin, lon_origin, alt_origin;  // (COULD THIS BETTER BE A VECTOR??)
+extern union longbbbb relposN_origin, relposE_origin, relposD_origin;  // (COULD THIS BETTER BE A VECTOR??)
 
 ///////////////////////////////////////////////////////////////////////////////
 // WRAP ALL THIS UP INTO A STRUCTURE
@@ -51,3 +52,4 @@ extern volatile union intbb sog_gps;                                // speed ove
 extern volatile union uintbb cog_gps;                               // course over ground
 extern volatile union intbb climb_gps;                              // climb
 extern volatile union longbbbb tow;
+extern volatile union longbbbb relposN, relposE, relposD;        // rover relative position to the base  (COULD THIS BETTER BE A VECTOR??)

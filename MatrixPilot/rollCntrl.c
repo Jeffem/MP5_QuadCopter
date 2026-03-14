@@ -98,10 +98,11 @@ void normalRollCntrl(void)
 #endif
 	if (settings._.AileronNavigation && state_flags._.GPS_steering)
 	{
+        rollAccum.WW = 0;
 		rollAccum._.W1 = navigate_determine_deflection('h');
 	}
         else 
-                rollAccum.WW = 0;
+        rollAccum.WW = 0;
 	if (settings._.RollStabilizaionAilerons && state_flags._.pitch_feedback)
 	{
 //gfm reports in inner loop		gyroRollFeedback.WW = - __builtin_mulus(rollkd, rotationRateError[1]);
@@ -121,7 +122,7 @@ void normalRollCntrl(void)
 		gyroYawFeedback.WW = 0;
 	}
 //upstream	roll_control = (int32_t)rollAccum._.W1 + (int32_t)gyroRollFeedback._.W1 + (int32_t)gyroYawFeedback._.W1;
-        outerroll_control = (int32_t)rollAccum._.W1- (int32_t)gyroYawFeedback._.W1;
+    outerroll_control = (int32_t)rollAccum._.W1- (int32_t)gyroYawFeedback._.W1;
 //gfm	roll_control = (int32_t)rollAccum._.W1 - (int32_t)gyroRollFeedback._.W1 - (int32_t)gyroYawFeedback._.W1;
 	// Servo reversing is handled in servoMix.c
 }
@@ -171,7 +172,7 @@ void InnerrollCntrl(void)
         rollAccel_1.WW = __builtin_mulus(59297 , rollAccel_1._.W1);
         rollAccel_1.WW += gyroAccelFeedback.WW;
         gyroAccelFeedback.WW -= __builtin_mulus(6239 , rollAccel_1._.W1);
-		gyroRollFeedback.WW = - __builtin_mulus(rollkd, rotationRateError[1]);
+		//gyroRollFeedback.WW = - __builtin_mulus(rollkd, rotationRateError[1]);
 		gyroRollFeedback.WW = __builtin_mulus(rollkd, rotationRateError[1]);
 	}
 	else
@@ -179,6 +180,6 @@ void InnerrollCntrl(void)
 	gyroRollFeedback.WW = 0;
         gyroAccelFeedback.WW = 0;
 	}
-	roll_control = outerroll_control - (int32_t)gyroRollFeedback._.W1 - (int32_t)gyroAccelFeedback._.W1;
-	roll_control =  outerroll_control + (int32_t)gyroRollFeedback._.W1 + (int32_t)gyroAccelFeedback._.W1;
+	//roll_control = outerroll_control + (int32_t)gyroRollFeedback._.W1 + (int32_t)gyroAccelFeedback._.W1;
+	roll_control =  outerroll_control + (int32_t)gyroRollFeedback._.W1 ;
 }

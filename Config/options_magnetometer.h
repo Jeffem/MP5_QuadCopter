@@ -74,8 +74,8 @@
 //#define MAG_STATIC_OFFSET_Y       0
 //#define MAG_STATIC_OFFSET_Z       0
 #define MAG_STATIC_OFFSET_X       53
-#define MAG_STATIC_OFFSET_Y       -112
-#define MAG_STATIC_OFFSET_Z       -158
+#define MAG_STATIC_OFFSET_Y       -223
+#define MAG_STATIC_OFFSET_Z       -101
 
 // ************************************************************************
 // *** Users should not need to change anything below here ****************
@@ -197,7 +197,9 @@
 #define MAG_Z_SIGN +
 #endif
 
-#define MAG_GAIN 1090.0
+#define MAG_GAIN_X 1050.0
+#define MAG_GAIN_Y 1090.0
+#define MAG_GAIN_Z 1000.0
 #endif
 
 // SparkFun HMC5883L mag

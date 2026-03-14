@@ -224,8 +224,11 @@ void dcm_calibrate(void)
 	}
 }
 
-void dcm_set_origin_location(int32_t o_lon, int32_t o_lat, int32_t o_alt)
+void dcm_set_origin_location(int32_t o_lon, int32_t o_lat, int32_t o_alt,int32_t o_relposN, int32_t o_relposE, int32_t o_relposD)
 {
+    relposN_origin.WW = o_relposN;
+    relposE_origin.WW = o_relposE;
+    relposD_origin.WW = o_relposD;
 	union longbbbb accum_nav;
 	unsigned char lat_cir;
 
@@ -245,9 +248,16 @@ struct relative3D dcm_absolute_to_relative(struct waypoint3D absolute)
 {
 	struct relative3D rel;
 
+    if (differential_gps()){
+	rel.z = absolute.z;
+	rel.y = absolute.y - relposN_origin.WW; // in centimeters
+	rel.x = absolute.x - relposE_origin.WW;
+    }
+else {
 	rel.z = absolute.z;
 	rel.y = (absolute.y - lat_origin.WW) / 90; // in meters
 	rel.x = long_scale((absolute.x - lon_origin.WW) / 90, cos_lat);
+}
 	return rel;
 }
 
@@ -268,9 +278,13 @@ vect3_32t dcm_rel2abs(vect3_32t rel)
 	vect3_32t abs;
 
 	abs.z = rel.z;
+#ifdef USE_RELPOSNED
+	abs.y = rel.y + relposN_origin.WW;
+	abs.x = rel.x + relposE_origin.WW;
+#else
 	abs.y = (rel.y * 90) + lat_origin.WW;
 	abs.x = (rel.x * 90) + lon_origin.WW;
 //	abs.x = long_scale((rel.x * 90), cos_lat) + lon_origin.WW;
-
+#endif
 	return abs;
 }

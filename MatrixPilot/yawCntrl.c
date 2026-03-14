@@ -173,16 +173,17 @@ void InneryawCntrl(void)
         //19
 	if (settings._.YawStabilizationRudder && state_flags._.pitch_feedback)
 	{
-                  gyroAccelFeedback.WW = __builtin_mulus(yawkafilter ,rotationRateError[2]>>1);
-                  yawAccel_1.WW = __builtin_mulus(59297 , yawAccel_1._.W1);
-                  yawAccel_1.WW += gyroAccelFeedback.WW;
-                  gyroAccelFeedback.WW -= __builtin_mulus(6239 , yawAccel_1._.W1);
-	          gyroYawFeedback.WW = __builtin_mulus(yawkdrud, rotationRateError[2]>>1);
+        gyroAccelFeedback.WW = __builtin_mulus(yawkafilter ,rotationRateError[2]>>1);
+        yawAccel_1.WW = __builtin_mulus(59297 , yawAccel_1._.W1);
+        yawAccel_1.WW += gyroAccelFeedback.WW;
+        gyroAccelFeedback.WW -= __builtin_mulus(6239 , yawAccel_1._.W1);
+	    gyroYawFeedback.WW = __builtin_mulus(yawkdrud, rotationRateError[2]>>1);
 	}
 	else
 	{
 		gyroYawFeedback.WW = 0;
-                  gyroAccelFeedback.WW = 0;
+        gyroAccelFeedback.WW = 0;
 	}
-	yaw_control = outeryaw_control + (int32_t)gyroYawFeedback._.W1 + (int32_t)gyroAccelFeedback._.W1;
+	//yaw_control = outeryaw_control + (int32_t)gyroYawFeedback._.W1 + (int32_t)gyroAccelFeedback._.W1;
+	yaw_control = outeryaw_control + (int32_t)gyroYawFeedback._.W1 ;
 }

@@ -27,7 +27,7 @@
 #include "../libDCM/rmat.h"
 
 #if (USE_LIDAR_ALTITUDE	== 1)
-int32_t lidar0 = 0;// LidarLite value for a null altitude in half millimeters
+int32_t lidar0 = 0;// LidarLite value for a null altitude in millimeters
 lidar_callback_funcptr lidar_callback = NULL;
 void rxLidar_on_PWM(lidar_callback_funcptr callback)  // service the Lidar altimeter on PWM
 {

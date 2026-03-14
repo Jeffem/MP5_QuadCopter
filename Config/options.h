@@ -137,7 +137,7 @@
 // If you define SPEED_CONTROL to be 1, MatrixPilot will take air speed into account
 // in the altitude controls, and will trim the throttle and  pitch to maintain air speed.
 // Define DESIRED_SPEED to be the air speed that you want, in meters/second.
-#define SPEED_CONTROL                       1
+#define SPEED_CONTROL                       0
 #define DESIRED_SPEED                       2    // 2m/s
 
 // Inverted flight
@@ -177,7 +177,7 @@
 // Define USE_LIDAR_ALTITUDE to be 1 to use Lidar Lite V3 for altitude correction.
 #ifndef USE_LIDAR_ALTITUDE
 #define USE_LIDAR_ALTITUDE                  1
-#define MIN_LIDAR_PULSE_Thresh              2
+#define MIN_LIDAR_PULSE_THRESH              2
 #endif
 
 // Racing Mode
@@ -275,6 +275,7 @@
 #define CAMERA_PITCH_OUTPUT_CHANNEL             CHANNEL_UNUSED
 #define CAMERA_YAW_OUTPUT_CHANNEL               CHANNEL_UNUSED
 #define TRIGGER_OUTPUT_CHANNEL                         CHANNEL_5
+#define DIFFGPS_OUTPUT_CHANNEL                         CHANNEL_6
 #define PASSTHROUGH_A_OUTPUT_CHANNEL            CHANNEL_UNUSED
 #define PASSTHROUGH_B_OUTPUT_CHANNEL            CHANNEL_UNUSED
 #define PASSTHROUGH_C_OUTPUT_CHANNEL            CHANNEL_UNUSED
@@ -394,7 +395,7 @@
 
 // NUM_ANALOG_INPUTS:
 // For UDB4 boards: Set to 0-4.  Analog pins are AN15 - AN18.
-#define NUM_ANALOG_INPUTS                   1 // moved to board specific config files
+//#define NUM_ANALOG_INPUTS                   1 // moved to board specific config files
 
 // Channel numbers for each analog input
 //   - Only assign each channel number to one analog sensor
@@ -497,9 +498,9 @@
 // Proportional gains should be less than 4.0.
 // Rate gains should be less than 0.8.
 // With the new helical turn control, rate gains are not even needed, try setting them all to zero.
-// Proportional gains include ROLLKP, YAWKP_AILERON, PITCHGAIN,
+// Proportional gains include ROLLKP, YAWKP_AILERON, PITCHKP,
 // ELEVATOR_BOOST, YAWKP_RUDDER, ROLLKP_RUDDER,
-// MANUAL_AILERON_RUDDER_MIX, RUDDER_BOOST, HOVER_ROLLKP, HOVER_PITCHGAIN, HOVER_YAWKP
+// MANUAL_AILERON_RUDDER_MIX, RUDDER_BOOST, HOVER_ROLLKP, HOVER_PITCHKP, HOVER_YAWKP
 // Rate gains include ROLLKD, YAWKD_AILERON, PITCHKD, YAWKD_RUDDER, ROLLKD_RUDDER,
 // HOVER_ROLLKD, HOVER_PITCHKD, HOVER_YAWKD
 
@@ -512,7 +513,7 @@
 // the feed forward gain for that axis.
 // For each axis, a deflection term is added equal to the feed forward gain for that axis
 // times projection of the desired earth vertical rotation rate onto that axis
-#define FEED_FORWARD                        1.0
+#define FEED_FORWARD                        0.0
 
 // TURN_RATE_NAV and TURN_RATE_FBW set the gains of the helical turn control for
 // waypoint navigation mode and fly by wire mode respectively.
@@ -521,6 +522,9 @@
 #define TURN_RATE_NAV                       30.0
 #define TURN_RATE_FBW                       60.0
 
+#define spedix
+//#define SK450
+
 // Aileron/Roll Control Gains
 // ROLLKP is the proportional gain, approximately 0.25
 // ROLLKD is the derivative (gyro) gain, approximately 0.125
@@ -528,6 +532,7 @@
 // use it only if there is no rudder.
 // YAWKD_AILERON is the derivative feedback gain for ailerons in response to yaw rotation.
 // use it only if there is no rudder.
+#ifdef SK450
 #define ROLLKP                              0.20
 #define ROLLKD                              0.18
 #define ROLLKA                              0.005
@@ -535,13 +540,13 @@
 #define YAWKD_AILERON                       0.00
 
 // Elevator/Pitch Control Gains
-// PITCHGAIN is the pitch stabilization gain, typically around 0.125
+// PITCHKP is the pitch stabilization gain, typically around 0.125
 // PITCHKD feedback gain for pitch damping, around 0.0625
 // ELEVATOR_BOOST is the additional gain multiplier for the manually commanded elevator deflection
-#define PITCHGAIN                          0.20
-#define PITCHKD                              0.18
-#define PITCHKA                              0.005
-#define ELEVATOR_BOOST             0.0
+#define PITCHKP                            0.20
+#define PITCHKD                            0.18
+#define PITCHKA                            0.005
+#define ELEVATOR_BOOST                     0.0
 
 // Parameters below are used in the computation of angle of attack and pitch trim.
 // ( INVERTED_NEUTRAL_PITCH is no longer used and should not be used.) -- Note (RobD) yes it is?
@@ -569,12 +574,12 @@
 // Uncomment the line below to activate the CUSTOM_OFFSETS feature in MatrixPilot.
 
 //#define CUSTOM_OFFSETS
-#define XACCEL_OFFSET ( 0 ) 
-#define YACCEL_OFFSET ( 0 )
-#define ZACCEL_OFFSET ( 0 )
-#define XRATE_OFFSET  ( 0 ) // not used by the UDB4
-#define YRATE_OFFSET  ( 0 ) // not used by the UDB4
-#define ZRATE_OFFSET  ( 0 ) // not used by the UDB4
+#define XACCEL_OFFSET ( 230 ) 
+#define YACCEL_OFFSET ( -109 )
+#define ZACCEL_OFFSET ( 373 )
+#define XRATE_OFFSET  ( -191 ) // not used by the UDB4
+#define YRATE_OFFSET  ( 18 ) // not used by the UDB4
+#define ZRATE_OFFSET  ( -36 ) // not used by the UDB4
 
 // Rudder/Yaw Control Gains
 // YAWKP_RUDDER is the proportional feedback gain for rudder control of yaw orientation.
@@ -600,7 +605,7 @@
 // Gains are named based on plane's frame of reference (roll means ailerons)
 // HOVER_ROLLKP is the roll-proportional feedback gain applied to the ailerons while navigating a hover
 // HOVER_ROLLKD is the roll gyro feedback gain applied to ailerons while stabilizing a hover
-// HOVER_PITCHGAIN is the pitch-proportional feedback gain applied to the elevator while stabilizing a hover
+// HOVER_PITCHKP is the pitch-proportional feedback gain applied to the elevator while stabilizing a hover
 // HOVER_PITCHKD is the pitch gyro feedback gain applied to elevator while stabilizing a hover
 // HOVER_PITCH_OFFSET is the neutral pitch angle for the plane (in degrees) while stabilizing a hover
 // HOVER_YAWKP is the yaw-proportional feedback gain applied to the rudder while stabilizing a hover
@@ -611,7 +616,45 @@
 //                            value is proportionally scaled down.
 #define HOVER_ROLLKP                        0.05
 #define HOVER_ROLLKD                        0.05
-#define HOVER_PITCHGAIN                     0.2
+#define HOVER_PITCHKP                       0.2
+#define HOVER_PITCHKD                       0.25
+#define HOVER_PITCH_OFFSET                  0.0        // + leans towards top, - leans towards bottom
+#define HOVER_YAWKP                         0.2
+#define HOVER_YAWKD                         0.25
+#define HOVER_YAW_OFFSET                    0.0
+#define HOVER_PITCH_TOWARDS_WP             30.0
+#define HOVER_NAV_MAX_PITCH_RADIUS         20
+#endif
+
+#ifdef spedix
+#define ROLLKP                              0.08
+#define ROLLKD                              0.08
+#define ROLLKA                              0.0
+#define YAWKP_AILERON                       0.00
+#define YAWKD_AILERON                       0.00
+
+#define PITCHKP                            0.08
+#define PITCHKD                            0.08
+#define PITCHKA                            0.0
+#define ELEVATOR_BOOST                     0.0
+
+#define REFERENCE_SPEED                 (  12.0 )
+#define ANGLE_OF_ATTACK_NORMAL          (   0.0 )
+#define ANGLE_OF_ATTACK_INVERTED        (   0.0 )
+#define ELEVATOR_TRIM_NORMAL            (   0.0 )
+#define ELEVATOR_TRIM_INVERTED          (   0.0 )
+
+#define YAWKP_RUDDER                        0.3
+#define YAWKD_RUDDER                        0.12
+#define YAWKA_RUDDER                        0.00
+#define ROLLKP_RUDDER                       0.00
+#define ROLLKD_RUDDER                       0.00
+#define MANUAL_AILERON_RUDDER_MIX           0.00
+#define RUDDER_BOOST                        0.00
+
+#define HOVER_ROLLKP                        0.05
+#define HOVER_ROLLKD                        0.05
+#define HOVER_PITCHKP                       0.2
 #define HOVER_PITCHKD                       0.25
 #define HOVER_PITCH_OFFSET                  0.0        // + leans towards top, - leans towards bottom
 #define HOVER_YAWKP                         0.2
@@ -620,6 +663,16 @@
 #define HOVER_PITCH_TOWARDS_WP             30.0
 #define HOVER_NAV_MAX_PITCH_RADIUS         20
 
+#define CUSTOM_OFFSETS
+#define XACCEL_OFFSET ( 236 ) 
+#define YACCEL_OFFSET ( -80 )
+#define ZACCEL_OFFSET ( -384 )
+#define XRATE_OFFSET  ( 39 ) // not used by the UDB4
+#define YRATE_OFFSET  ( 41 ) // not used by the UDB4
+#define ZRATE_OFFSET  ( -228 ) // not used by the UDB4
+
+
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Camera Stabilization and Targeting
@@ -692,8 +745,8 @@
 // These settings are only used when Altitude Hold is enabled above.
 
 // Min and Max target heights in meters.  These only apply to stabilized mode.
-#define HEIGHT_TARGET_MIN                   50.0 //gfm changes 25 m to 50 cm
-#define HEIGHT_TARGET_MAX                   450.0//gfm changes 100 m to 450 cm
+#define HEIGHT_TARGET_MIN                   250 //gfm changes 25 m to 250 mm
+#define HEIGHT_TARGET_MAX                   1500//gfm changes 100 m to 1500 mm
 
 // The range of altitude within which to linearly vary the throttle
 // and pitch to maintain altitude.  A bigger value makes altitude hold
@@ -707,10 +760,10 @@
 // Throttle values are from 0.0 - 1.0.
 #define ALT_HOLD_THROTTLE_MIN     0.0
 #define ALT_HOLD_THROTTLE_MAX     1.0
-#define THROTTLE_KI                0.02  // nominal value 0.02 will be displayed as 0.02*1.6/200=0 by Mavlink
-#define THROTTLE_KP               0.25   // nominal value 1/8 will be displayed as 1*1.6=1.6 by Mavlink
-#define THROTTLE_KD               1.0   // nominal value 0.5 will be displayed as 0.5*1.6=0.8 by Mavlink
-#define THROTTLE_KA               0.05 //nominal value 0.05 will be displayed as 0.05*980/1024*1.6=0.75 by Mavlink
+#define THROTTLE_KI                0.01  // nominal value 0.02 will be displayed as 0.02*1.6/200=0 by Mavlink
+#define THROTTLE_KP               0.08   // nominal value 1/8 will be displayed as 1*1.6=1.6 by Mavlink
+#define THROTTLE_KD               0.3   // nominal value 0.5 will be displayed as 0.5*1.6=0.8 by Mavlink
+#define THROTTLE_KA               0.0 //nominal value 0.05 will be displayed as 0.05*980/1024*1.6=0.75 by Mavlink
 
 // Use ALT_HOLD_PITCH_MAX when below HEIGHT_MARGIN of the target height.
 // Interpolate between ALT_HOLD_PITCH_MAX and ALT_HOLD_PITCH_MIN when
@@ -781,11 +834,10 @@
 // examine the telemetry after a flight, take a look in the .csv file, it will be easy to spot the
 // altitude, expressed in meters.
 
-#define USE_FIXED_ORIGIN	    1
+#define USE_FIXED_ORIGIN	    0
 //#define FIXED_ORIGIN_LOCATION	    { -1219950467, 374124664, 30.0 }	// A point in Baylands Park in Sunnyvale, CA
 //#define FIXED_ORIGIN_LOCATION	    { 113480854, 472580108, 578.0 }	// Innsbruck, useful for X-Plane flight simulator
-#define FIXED_ORIGIN_LOCATION	    { -20073850, 486224327, 47.0 }	// St Malo, useful gfm development
-
+#define FIXED_ORIGIN_LOCATION 	    {  -20073850, 486224327, 47.0, 0, 0, 0 }	// St Malo, useful gfm development with relposned
 ///////////////////////////////////////////////////////////////////////////////////
 // Vehicle and Pilot Identification
 
@@ -842,7 +894,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Optionally enable experimental extended range navigation support (merged from ballon launch branch)
 //#define USE_EXTENDED_NAV
-
+// With UBlox new navigation message, GPS position can be read directly in cm
+#define USE_RELPOSNED
 
 ////////////////////////////////////////////////////////////////////////////////
 // Debugging defines

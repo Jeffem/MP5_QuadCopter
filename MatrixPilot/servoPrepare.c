@@ -118,7 +118,7 @@ static void flight_controller(void)
 		rollCntrl();
 		yawCntrl();
 		pitchCntrl();
-                  if (dcm_flags._.init_finished)
+                  if (dcm_flags._.calib_finished)
                      estAltitude(); //estAltitude in mm
 		altitudeCntrl();
 #else		

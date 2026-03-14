@@ -38,7 +38,7 @@ const mavlink_parameter mavlink_parameters_list[] = {
 	{"PID_ROLLKD", {0.0}, {0.5}, UDB_TYPE_GYROSCALE_Q14, PARAMETER_READWRITE, (void*)&rollkd, sizeof(rollkd) },
 	{"PID_YAWKPAIL", {0.0}, {0.5}, UDB_TYPE_Q14, PARAMETER_READWRITE, (void*)&yawkpail, sizeof(yawkpail) },
 	{"PID_YAWKDAIL", {0.0}, {0.5}, UDB_TYPE_GYROSCALE_Q14, PARAMETER_READWRITE, (void*)&yawkdail, sizeof(yawkdail) },
-	{"PID_PITCHGAIN", {0.0}, {0.5}, UDB_TYPE_Q14, PARAMETER_READWRITE, (void*)&pitchgain, sizeof(pitchgain) },
+	{"PID_PITCHKP", {0.0}, {0.5}, UDB_TYPE_Q14, PARAMETER_READWRITE, (void*)&pitchkp, sizeof(pitchkp) },
 	{"PID_PITCHKD", {0.0}, {0.5}, UDB_TYPE_Q14, PARAMETER_READWRITE, (void*)&pitchkd, sizeof(pitchkd) },
 	{"PID_ROLLKPRUD", {0.0}, {0.5}, UDB_TYPE_Q14, PARAMETER_READWRITE, (void*)&rollkprud, sizeof(rollkprud) },
 	{"PID_YAWKPRUD", {0.0}, {0.5}, UDB_TYPE_Q14, PARAMETER_READWRITE, (void*)&yawkprud, sizeof(yawkprud) },

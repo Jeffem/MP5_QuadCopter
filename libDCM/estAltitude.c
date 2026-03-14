@@ -28,9 +28,11 @@
 #include "../libDCM/deadReckoning.h"
 #include <math.h>
 #include <stdlib.h>
+#include "rmat.h"
 
 //#define USE_DEBUG_IO
-
+#define ALPHA_CONSTANTE (int16_t) 1024*2
+#define BETA_CONSTANTE (int16_t) 1024*6
 // The origin is recorded as the altitude of the plane during power up.
 
 long barometer_pressure_gnd = 0;
@@ -55,7 +57,7 @@ static int32_t lidar_altitude_pred;        // predicted above ground height (mil
 static int32_t IMU_altitude;        // previous above ground height (millimeters)
 static int32_t IMU_altitude_1;        // previous above ground height (millimeters)
 static int32_t IMU_altitude_pred;        // predicted above ground height (millimeters)
-static int32_t vze_baro,vze_lidar,vze_IMU;    // Altitude speeds
+static int32_t vze_baro,vze_lidar,vze_IMU;    // Altitude speeds in mm/s
 static int32_t vze_IMU_Bias;                //Altitude speed bias
 static uint16_t qual_baro,qual_lidar,qual_IMU;// altitudes qualities
 uint32_t        alpha,beta;              // filter coefficients
@@ -63,10 +65,9 @@ static uint16_t val_baro,val_lidar,val_IMU;              // altitude validities
 static uint16_t baro_confiance=2;            //Altitudes confidences
 static uint16_t lidar_confiance=10;
 static uint16_t IMU_confiance=0;
-//uint16_t feedback=256*10;//=10 / PID_HZ * 10 * 1024; // IMU altitude feedback compensation to avoid drift
-uint16_t feedback=16;//=0.1*65536/40/10; // IMU altitude feedback compensation to avoid accelero drift
-int32_t fusion,vze_fusion;                // Altitude fusion output (in mm)
+int32_t fusion,vze,vze_fusion;                // Altitude fusion output (in mm)
 int32_t estimated_altitude;        //  (millimeters)
+int16_t vtemp;
 
 inline int16_t get_barometer_temperature(void)   { return barometer_temperature; }
 inline long get_barometer_pressure(void)     { return barometer_pressure; }
@@ -113,8 +114,9 @@ void altimeter_calibrate(void)
     qual_baro = 0;
     val_baro = 0;
     val_lidar = 0;
-    val_IMU = 1;
-   
+    val_IMU = 0;
+//    if (lidar0 ==0) lidar0 = lidar_altitude;
+//    else lidar0 = (15*lidar0 + lidar_altitude)>>4;
 #ifdef USE_DEBUG_IO
 	printf("altimeter_calibrate: ground temp & pres set %i, %li\r\n", barometer_temperature_gnd, barometer_pressure_gnd);
 #endif
@@ -176,18 +178,20 @@ void estAltitude(void)
 	calculate_sonar_height_above_ground();
     if (sonar_height_to_ground <10000) estimated_altitude = sonar_height_to_ground;        // lidar altitude (millimeters)
 #endif
+/*
+			// integrate the raw acceleration mm/s
+			IMUvelocityz.WW += __builtin_mulss(((int16_t)(ACCEL2DELTAV_Z)), accelEarth[2]);
+		
+			// integrate IMU velocity to update the IMU location	
+			IMUlocationz.WW += (__builtin_mulss(((int16_t)(VELOCITY2LOCATION_Z)), IMUvelocityz._.W1)>>4);
 
+**/
 // Beginning alti_fusion gfm
       /*======================================================================*/
       /*          Altimeter fusion   (all altitudes in mm)                    */
       /*======================================================================*/
       // IMU altitude filter and offset compensation using IMUvelocityz (in mm/s)
-      IMU_altitude = IMUlocationz.WW >> 6;
-//      vze_IMU = __builtin_mulus(feedback,(fusion - IMU_altitude) );
-//      vze_IMU = vze_IMU + IMUintegralAccelerationz.WW ;
-//      vze_IMU = (int32_t)(__builtin_divud( vze_IMU, 164) );
-//     #define VELOCITY2LOCATION (1.0 / PID_HZ *10.0*4.0*RMAX)// mm/s
-//      vze_IMU = (__builtin_mulss(((int16_t)(VELOCITY2LOCATION)), IMUvelocityz._.W1));
+      IMU_altitude = IMUlocationz._.W1;
 
       // Update qualities
       if (abs(IMU_altitude - fusion)<1000)
@@ -234,46 +238,47 @@ void estAltitude(void)
           baro_confiance=2;
           lidar_confiance=0;
           }
+//         lidar_confiance=10;
+//         IMU_confiance=0;
       
       // Compute filter alpha beta parameters
 //       alpha := 2.0*(2.0*qual_IMU-1)/qual_IMU/(qual_IMU+1) ;
 //      beta := 6.0/qual_IMU/(qual_IMU+1) ;
-     alpha = __builtin_muluu(2048,(2*qual_IMU-1));
+      alpha = __builtin_muluu(ALPHA_CONSTANTE,(2*qual_IMU-1));
       alpha = __builtin_divud(alpha,qual_IMU);
       alpha =__builtin_divud(alpha,(qual_IMU+1)) ;
-//  (beta* 10 / PID_HZ), factor ten to transform cm/s in mm/s
-      beta = __builtin_divud(1536,qual_IMU);
+//  (BETA_CONSTANTE = 6* 1024)
+      beta = __builtin_divud(BETA_CONSTANTE,qual_IMU);
       beta = __builtin_divud(beta,(qual_IMU+1)) ;
  //     beta = __builtin_divud(beta,PID_HZ) ;
 
-      vze_IMU = IMUvelocityz._.W1 * 10 / PID_HZ ;
+//      vze_IMU = (IMUvelocityz.WW >> 6)/ PID_HZ ;
 //      Drift correction due to residual accelero offset
-         if (fusion<10000) 
-          vze_IMU_Bias=(63*vze_IMU_Bias+(vze_lidar - (IMUvelocityz.WW >> 8)))>>6;//40/10/1024=1/256
-          else
-          vze_IMU_Bias=(63*vze_IMU_Bias+(vze_fusion - (IMUvelocityz.WW >> 8)))>>6;
+/*         if (fusion<10000) 
+          vze_IMU_Bias=(63*vze_IMU_Bias+(vze_lidar - vze_IMU))>>6;//40/10/1024=1/256
+          else {
+          vze_IMU_Bias=(63*vze_IMU_Bias+(vze - vze_IMU))>>6;
          if ((fusion<12000) && (val_lidar>0)) 
-          vze_IMU_Bias=(63*vze_IMU_Bias+(vze_lidar - (IMUvelocityz.WW >> 8)))>>6;//40/10/1024=1/256
+          vze_IMU_Bias=(63*vze_IMU_Bias+(vze_lidar - vze_IMU))>>6;//40/10/1024=1/256
           else if ( (val_baro>0))
-          vze_IMU_Bias=(63*vze_IMU_Bias+(vze_baro - (IMUvelocityz.WW >> 8)))>>6;
+          vze_IMU_Bias=(63*vze_IMU_Bias+(vze_baro - vze_IMU))>>6;
           else if (val_IMU>0)
-          vze_IMU_Bias=(63*vze_IMU_Bias+(vze_fusion - (IMUvelocityz.WW >> 8)))>>6;
+          vze_IMU_Bias=(63*vze_IMU_Bias+(vze - vze_IMU))>>6;
           else
-          vze_IMU_Bias=vze_IMU_Bias;    
-//     vze_IMU=vze_IMU+vze_IMU_Bias;
-      
-      vze_IMU = vze_IMU + __builtin_mulus(beta, (int16_t)(IMU_altitude-IMU_altitude_1)) ;
-      IMU_altitude_pred =  IMU_altitude_pred +vze_IMU ;
-      IMU_altitude_pred =  IMU_altitude_pred + ((__builtin_mulus(alpha,(int16_t)(IMU_altitude-IMU_altitude_1)))) ;
+          vze_IMU_Bias=vze_IMU_Bias; }   
+      vze_IMU=vze_IMU+vze_IMU_Bias;
+ */     
+      vze_IMU +=__builtin_mulus(beta, (int16_t)(IMU_altitude-IMU_altitude_1)) ;
+      IMU_altitude_pred +=  vze_IMU ;
+      IMU_altitude_pred +=  __builtin_mulus(alpha,(int16_t)(IMU_altitude-IMU_altitude_1));
       IMU_altitude_1 = IMU_altitude_pred >> 10;
-//      IMU_altitude_pred :=  IMU_altitude_pred + ((alpha*(IMU_altitude-IMU_altitude_1))) +vze_IMU;
-//      IMU_altitude_1 := IMU_altitude_pred  div 1024;// One more time division by 1024 for renormalisation
+
 #if USE_BAROMETER_ALTITUDE>0
       // Compute filter alpha beta parameters
-      alpha = __builtin_muluu(2048,(2*qual_baro-1));
+      alpha = __builtin_muluu(ALPHA_CONSTANTE,(2*qual_baro-1));
       alpha = __builtin_divud(alpha,qual_baro);
       alpha =__builtin_divud(alpha,(qual_baro+1)) ;
-      beta = __builtin_divud(1536,qual_baro);
+      beta = __builtin_divud(BETA_CONSTANTE,qual_baro);
       beta = __builtin_divud(beta,(qual_baro+1)) ;
 
       vze_baro = vze_baro +  __builtin_mulus(beta, (int16_t)(barometer_agl_altitude-barometer_agl_altitude_1) );
@@ -283,20 +288,20 @@ void estAltitude(void)
 #endif
 #if USE_LIDAR_ALTITUDE>0
       // Compute filter alpha beta parameters (multiplied by 1024)
-      alpha = __builtin_muluu(2048,(2*qual_lidar-1));
+      alpha = __builtin_muluu(ALPHA_CONSTANTE,(2*qual_lidar-1));
       alpha = __builtin_divud(alpha,qual_lidar);
       alpha =__builtin_divud(alpha,(qual_lidar+1)) ;
-      beta = __builtin_divud(1536,qual_lidar);
+      beta = __builtin_divud(BETA_CONSTANTE,qual_lidar);
       beta = __builtin_divud(beta,(qual_lidar+1)) ;
 
-      vze_lidar = vze_lidar + __builtin_mulus(beta , (int16_t)(lidar_altitude-lidar_altitude_1)) ;
-      lidar_altitude_pred =  lidar_altitude_pred + __builtin_mulus(alpha,(int16_t)( lidar_altitude-lidar_altitude_1))+vze_lidar ;
+      vze_lidar += __builtin_mulus(beta , (int16_t)(lidar_altitude-lidar_altitude_1)) ;
+      lidar_altitude_pred += __builtin_mulus(alpha,(int16_t)( lidar_altitude-lidar_altitude_1))+vze_lidar ;
       lidar_altitude_1 = lidar_altitude_pred >> 10;
 #endif
 
       // update confidences
       val_IMU = __builtin_muluu(qual_IMU , IMU_confiance)<<1  ;//val_IMU max = 4*5*2=40
-      if (( IMU_altitude < -1000) || (abs(IMU_altitude - fusion)>4000)) val_IMU = 0;
+      if (( IMU_altitude_1 < -100) || (abs(IMU_altitude_1 - fusion)>4000)|| (val_lidar>10))  val_IMU = 0;
 #if USE_BAROMETER_ALTITUDE>0
       val_baro = __builtin_muluu(qual_baro , baro_confiance);   //val_baro max = 60
       if (( barometer_agl_altitude_1 < -4000) || (abs(barometer_agl_altitude_1 - fusion)>10000)) val_baro = 0;
@@ -312,45 +317,27 @@ void estAltitude(void)
      // update confidences
 //      val_GPS := qual_GPS * GPS_Confiance;
 //      if (( GPS = 0.0) OR (abs(GPS - Alti)>0.5)) then val_GPS := 0.0;
-    
+
 
       // compute fusion
       if ((val_baro>0.0) || (val_lidar>0.0) || (val_IMU>0.0))
         {
-//        fusion = (fusion+barometer_agl_altitude_pred*val_baro+lidar_altitude_pred*val_lidar + IMU_altitude*val_IMU ) ;
-//        fusion = (fusion << 7) +__builtin_mulus(val_baro,barometer_agl_altitude_1);
-        fusion = fusion + __builtin_mulus(val_baro,(int16_t)barometer_agl_altitude_1);
-        fusion = fusion +__builtin_mulus(val_lidar,(int16_t)lidar_altitude_1);
-        fusion = fusion +__builtin_mulus(val_IMU,(int16_t)(IMU_altitude_1))  ;
-        fusion = __builtin_divsd(fusion ,(1+val_baro+val_lidar+val_IMU));
-//        fusion = __builtin_divsd(fusion ,(128+val_baro+val_lidar+val_IMU));
-        IMUlocationz.WW = fusion <<6;
-       }
+        fusion = __builtin_mulus(val_baro,(int16_t)barometer_agl_altitude_1);
+        fusion += __builtin_mulus(val_lidar,(int16_t)lidar_altitude_1);
+        fusion += __builtin_mulus(val_IMU,(int16_t)(IMU_altitude_1))  ;
+        fusion = __builtin_divsd(fusion ,(val_baro+val_lidar+val_IMU));
+ 
+        vze = __builtin_mulus(val_baro,(int16_t)vze_baro);
+        vze += __builtin_mulus(val_lidar,(int16_t)vze_lidar);
+        vze += __builtin_mulus(val_IMU,(int16_t)vze_IMU)  ;
+        vze = __builtin_divsd(vze ,(val_baro+val_lidar+val_IMU));
+        vze_fusion = (__builtin_mulus((int16_t)PID_HZ,vze))>>10;
+      }
       else
       {
       fusion = IMU_altitude;
+      vze_fusion = IMUvelocityz._.W1;
       }
-        // If Lidar is validated, then filter vze_fusion and finally compense eventual drift of Vz by Vz=(1-alpha)Vz+alpha*vze_fusion with alpha=1/164
-//        vze_fusion = vze_IMU>>8; // en cm/s
-//        val_IMU=val_IMU>>3;
-//        val_lidar=val_lidar>>3;
-//        vze_fusion =__builtin_divsd((5*vze_fusion + vze_IMU*val_IMU+ vze_lidar*val_lidar) , (5+val_IMU+val_lidar));
-//            IMUintegralAccelerationz.WW=__builtin_mulus(65136,IMUintegralAccelerationz._.W1)+vze_fusion;// IMUvelocityz._.W1 in cm/s est positive vers le haut
-      if ((val_baro>0.0) || (val_lidar>0.0))
-      {
-          vze_fusion = vze_lidar>>8; // en cm/s
-//          IMUintegralAccelerationz.WW=vze_lidar*256;// IMUvelocityz._.W1 in cm/s est positive vers le haut 164=65536/400
-        }
-            else
-            {
-//            if (val_IMU>5) vze_fusion = (16*vze_fusion + vze_baro*val_baro+ vze_IMU*val_IMU) / (16+val_baro+val_IMU);
-//             IMUintegralAccelerationz.WW=__builtin_mulus(65136,IMUintegralAccelerationz._.W1)+vze_fusion;// IMUvelocityz._.W1 in cm/s est positive vers le haut
-         vze_fusion =IMUintegralAccelerationz._.W1;
-       }
-
-//        IMUlocationz.WW = fusion <<6;
-//        IMUintegralAccelerationz.WW +=  __builtin_mulus(feedback,(fusion - IMU_altitude));
-          IMUintegralAccelerationz.WW +=  vze_IMU_Bias <<4;
     estimated_altitude =  fusion ;  // Altitude in mm, positive upward
-// fin alti_fusion gfm
+    // fin alti_fusion gfm
 }

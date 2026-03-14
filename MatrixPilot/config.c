@@ -197,7 +197,7 @@ static void load_gains(void)
 //	gains.AileronBoost = ini_getf(strRoll, "boost", AILERON_BOOST, strConfigFile);
 
 // Elevator/Pitch Control Gains
-	gains.Pitchgain = ini_getf(strPitch, "gain", PITCHGAIN, strConfigFile);
+	gains.PitchKP = ini_getf(strPitch, "pitchkp", PITCHKP, strConfigFile);
 	gains.PitchKD = ini_getf(strPitch, "pitchkd", PITCHKD, strConfigFile);
 	gains.PitchKA = ini_getf(strPitch, "pitchka", PITCHKA, strConfigFile);
 //	gains.RudderElevMix = ini_getf(strPitch, "rudder", RUDDER_ELEV_MIX, strConfigFile);
@@ -239,7 +239,7 @@ static void load_gains(void)
 // Hover
     hover.HoverRollKP = ini_getf(strHover, "rollkp", HOVER_ROLLKP, strConfigFile);
     hover.HoverRollKD = ini_getf(strHover, "rollkd", HOVER_ROLLKD, strConfigFile);
-    hover.HoverPitchGain = ini_getf(strHover, "gain", HOVER_PITCHGAIN, strConfigFile);
+    hover.HoverPitchKP = ini_getf(strHover, "pitchkp", HOVER_PITCHKP, strConfigFile);
     hover.HoverPitchKD = ini_getf(strHover, "pitchkd", HOVER_PITCHKD, strConfigFile);
     hover.HoverPitchOffset = ini_getf(strHover, "pitch", HOVER_PITCH_OFFSET, strConfigFile);
     hover.HoverYawKP = ini_getf(strHover, "yawkp", HOVER_YAWKP, strConfigFile);
@@ -260,7 +260,7 @@ static void save_gains(void)
 	ini_putf(strRoll, "boost", gains.AileronBoost, strConfigFile);
 
 // Elevator/Pitch Control Gains
-	ini_putf(strPitch, "gain", gains.Pitchgain, strConfigFile);
+	ini_putf(strPitch, "pitchkp", gains.PitchKP, strConfigFile);
 	ini_putf(strPitch, "pitchkd", gains.PitchKD, strConfigFile);
 	ini_putf(strPitch, "pitchka", gains.PitchKA, strConfigFile);
 	ini_putf(strPitch, "rudder", gains.RudderElevMix, strConfigFile);
@@ -301,7 +301,7 @@ static void save_gains(void)
 // Hover
 	ini_putf(strHover, "rollkp", hover.HoverRollKP, strConfigFile);
 	ini_putf(strHover, "rollkd", hover.HoverRollKD, strConfigFile);
-	ini_putf(strHover, "gain", hover.HoverPitchGain, strConfigFile);
+	ini_putf(strHover, "pitchkp", hover.HoverPitchKP, strConfigFile);
 	ini_putf(strHover, "pitchkd", hover.HoverPitchKD, strConfigFile);
 	ini_putf(strHover, "pitch", hover.HoverPitchOffset, strConfigFile);
 	ini_putf(strHover, "yawkp", hover.HoverYawKP, strConfigFile);

@@ -203,11 +203,11 @@ static void I2C_callback(boolean I2CtrxOK)
                     switch (vectorIndex)
                     { 
                     case 0:     // read the magnetometer in case it is still sending data, so as to NACK it
-					magGain[vectorIndex] = __builtin_divud(((int32_t)(MAG_GAIN*RMAX)), magFieldRaw[MAG_X_AXIS]);
+					magGain[vectorIndex] = __builtin_divud(((int32_t)(MAG_GAIN_X*RMAX)), magFieldRaw[MAG_X_AXIS]);
                     case 1:     // read the magnetometer in case it is still sending data, so as to NACK it
-					magGain[vectorIndex] = __builtin_divud(((int32_t)(MAG_GAIN*RMAX)), magFieldRaw[MAG_Y_AXIS]);
+					magGain[vectorIndex] = __builtin_divud(((int32_t)(MAG_GAIN_Y*RMAX)), magFieldRaw[MAG_Y_AXIS]);
                     case 2:     // read the magnetometer in case it is still sending data, so as to NACK it
-					magGain[vectorIndex] = __builtin_divud(((int32_t)(MAG_GAIN*RMAX)), magFieldRaw[MAG_Z_AXIS]);
+					magGain[vectorIndex] = __builtin_divud(((int32_t)(MAG_GAIN_Z*RMAX)), magFieldRaw[MAG_Z_AXIS]);
                     }
                 }
 				else

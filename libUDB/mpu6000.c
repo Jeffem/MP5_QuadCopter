@@ -114,7 +114,7 @@ void MPU6000_init16(callback_fptr_t fptr)
          mpuOverSample = 1000 / HEARTBEAT_HZ;
 // Take care : due to this sample rate, dcm_run_imu_step()must be called in libDCM
 //             and not here under.
-//        A filter can be used to limit propeller vibrations (max frequency 10 000 RPM=166 Hz
+//        A filter can be used to limit propeller vibrations (max frequency 30 000 RPM=500 Hz
 // fin modif gfm gyro
 	// scaling & DLPF
 	writeMPUSPIreg16(MPUREG_CONFIG, BITS_DLPF_CFG_42HZ);

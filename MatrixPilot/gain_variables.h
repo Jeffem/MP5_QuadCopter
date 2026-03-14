@@ -52,12 +52,12 @@ extern uint16_t yawkdail;
 //#define AILERON_BOOST                     1.0
 
 // Elevator/Pitch Control Gains
-// PITCHGAIN is the pitch stabilization gain, typically around 0.125
+// PITCHKP is the pitch stabilization gain, typically around 0.125
 // PITCHKD feedback gain for pitch damping, around 0.0625
 // RUDDER_ELEV_MIX is the degree of elevator adjustment for rudder and banking
 // AILERON_ELEV_MIX is the degree of elevator adjustment for aileron
 // ELEVATOR_BOOST is the additional gain multiplier for the manually commanded elevator deflection
-extern uint16_t pitchgain;
+extern uint16_t pitchkp;
 extern uint16_t pitchkd;
 extern uint16_t pitchka;
 //extern uint16_t rudderElevMixGain;
@@ -94,7 +94,7 @@ extern uint16_t throttleki;
 // Gains are named based on plane's frame of reference (roll means ailerons)
 // HOVER_ROLLKP is the roll-proportional feedback gain applied to the ailerons while navigating a hover
 // HOVER_ROLLKD is the roll gyro feedback gain applied to ailerons while stabilizing a hover
-// HOVER_PITCHGAIN is the pitch-proportional feedback gain applied to the elevator while stabilizing a hover
+// HOVER_PITCHKP is the pitch-proportional feedback gain applied to the elevator while stabilizing a hover
 // HOVER_PITCHKD is the pitch gyro feedback gain applied to elevator while stabilizing a hover
 // HOVER_PITCH_OFFSET is the neutral pitch angle for the plane (in degrees) while stabilizing a hover
 // HOVER_YAWKP is the yaw-proportional feedback gain applied to the rudder while stabilizing a hover
@@ -106,7 +106,7 @@ extern uint16_t throttleki;
 
 extern uint16_t hoverrollkp;
 extern uint16_t hoverrollkd;
-extern uint16_t hoverpitchgain;
+extern uint16_t hoverpitchkp;
 extern uint16_t hoverpitchkd;
 extern uint16_t hoveryawkp;
 extern uint16_t hoveryawkd;

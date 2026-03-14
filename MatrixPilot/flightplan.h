@@ -24,7 +24,7 @@
 extern int16_t waypointIndex;
 
 boolean use_fixed_origin(void);
-vect3_32t get_fixed_origin(void);
+fixedOrigin3D get_fixed_origin(void);
 
 void flightplan_init(void);
 void flightplan_begin(int16_t flightplanNum);

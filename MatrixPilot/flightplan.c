@@ -35,14 +35,17 @@ boolean use_fixed_origin(void)
 #endif
 }
 
-vect3_32t get_fixed_origin(void)
+fixedOrigin3D get_fixed_origin(void)
 {
-	struct fixedOrigin3D origin = FIXED_ORIGIN_LOCATION;
+	fixedOrigin3D origin = FIXED_ORIGIN_LOCATION;
 
-	vect3_32t standardizedOrigin;
+	fixedOrigin3D standardizedOrigin;
 	standardizedOrigin.x = origin.x;
 	standardizedOrigin.y = origin.y;
 	standardizedOrigin.z = (int32_t)(origin.z * 100);
+	standardizedOrigin.N = origin.N;
+	standardizedOrigin.E = origin.E;
+	standardizedOrigin.D = origin.D;
 	return standardizedOrigin;
 }
 
