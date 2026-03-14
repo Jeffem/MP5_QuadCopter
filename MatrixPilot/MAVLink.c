@@ -910,7 +910,7 @@ extern int control_mode;
 #else
                 mavlink_msg_heartbeat_send(MAVLINK_COMM_0, gps_fix_type, tailFlash, mavlink_base_mode, mavlink_custom_mode, 0);
 #endif
-        //                mavlink_msg_heartbeat_send(MAVLINK_COMM_0, (uint8_t)((udb_pwIn[7]-lidar0) && 0x00FF), udb_cpu_load(), mavlink_base_mode, mavlink_custom_mode, (uint8_t)((udb_pwIn[7]-lidar0) >> 8));
+        //mavlink_msg_heartbeat_send(MAVLINK_COMM_0, (uint8_t)((udb_pwIn[7]-lidar0) && 0x00FF), udb_cpu_load(), mavlink_base_mode, mavlink_custom_mode, (uint8_t)((udb_pwIn[7]-lidar0) >> 8));
 		//mavlink_msg_heartbeat_send(mavlink_channel_t chan, uint8_t type, uint8_t autopilot, uint8_t base_mode, uint32_t custom_mode, uint8_t system_status)
 	}
 	// GPS RAW INT - Data from GPS Sensor sent as raw integers.
@@ -1086,7 +1086,8 @@ extern int control_mode;
 		    (uint16_t)((udb_pwIn[2]) >> 1),
 		    (uint16_t)((udb_pwIn[3]) >> 1),
 		    (uint16_t)((udb_pwIn[4]) >> 1),
-		    (uint16_t)((udb_pwOut[1]) >> 1),
+		    (uint16_t)((udb_pwIn[7])-lidar0),
+		    //(uint16_t)((udb_pwOut[1]) >> 1),
 		    (uint16_t)((udb_pwOut[2]) >> 1),
 		    (uint16_t)((udb_pwOut[3]) >> 1),
 		    (uint16_t)((udb_pwOut[4]) >> 1),

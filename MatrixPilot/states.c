@@ -70,6 +70,10 @@ static void stabilizedS(void);
 static void waypointS(void);
 static void returnS(void);
 
+static uint8_t sw_manual    = 0;
+static uint8_t sw_stab      = 0;
+static uint8_t sw_waypoints = 0;
+
 #ifdef CATAPULT_LAUNCH_ENABLE
 #define LAUNCH_DELAY (40)      // wait (x) * .25ms
 static int16_t launch_timer = LAUNCH_DELAY;
@@ -164,7 +168,7 @@ void udb_heartbeat_40hz_callback(void)
 	{
                    if (tailFlash != desiredtailFlash) {
                             setBehavior(F_TRIGGER);
-                            tailFlash = (tailFlash+1) % 7;
+                            //tailFlash = (tailFlash+1) % 7;
                             }
 		counter = 0;
 		// Update the nav capable flag. If the GPS has a lock, gps_data_age will be small.
@@ -207,8 +211,7 @@ static void ent_calibrateS(void)
 	waggle = 0;
 	stateS = &calibrateS;
 	calib_timer = CALIB_PAUSE;
-	led_on(LED_RED); // turn on mode led
-    desiredtailFlash = 1;    
+    tailFlash = 1;    
 }
 
 // Acquire state is used to wait for the GPS to achieve lock.
@@ -240,9 +243,7 @@ static void ent_acquiringS(void)
 	throttleFiltered._.W1 = 0;
 	stateS = &acquiringS;
 	standby_timer = STANDBY_PAUSE - CALIB_PAUSE;
-	led_off(LED_RED);
-	led_on(LED_ORANGE);
-    desiredtailFlash = 2;      
+   tailFlash = 2;      
 }
 
 //	Manual state is used for direct pass-through control from radio to servos.
@@ -255,16 +256,13 @@ static void ent_manualS(void)
 // modif GFM QuadCopter because heli cannot fly without gyro stab
 #if (AIRFRAME_TYPE == AIRFRAME_QUAD)
 	state_flags._.pitch_feedback = 1;
-        LED_BLUE = LED_ON;
-        LED_ORANGE = LED_OFF;
 #endif
 	state_flags._.altitude_hold_throttle = 0;
 	state_flags._.altitude_hold_pitch = 0;
 	state_flags._.disable_throttle = 0;
 	waggle = 0;
-	led_off(LED_RED);
 	stateS = &manualS;
-    desiredtailFlash = 3;
+    tailFlash = 3;
 }
 
 //	Auto state provides augmented control.
@@ -284,11 +282,8 @@ static void ent_stabilizedS(void)
 	state_flags._.altitude_hold_throttle = (settings._.AltitudeholdStabilized == AH_FULL);
 	state_flags._.altitude_hold_pitch = (settings._.AltitudeholdStabilized == AH_FULL || settings._.AltitudeholdStabilized == AH_PITCH_ONLY);
 	waggle = 0;
-	LED_BLUE = LED_OFF; 
-//	LED_RED = LED_ON;
-    LED_ORANGE = LED_ON;
 	stateS = &stabilizedS;
-    desiredtailFlash = 4;
+    tailFlash = 4;
 }
 
 #ifdef CATAPULT_LAUNCH_ENABLE
@@ -341,11 +336,8 @@ static void ent_waypointS(void)
 	}
 
 	waggle = 0;
-	led_on(LED_RED);
-	LED_ORANGE = LED_OFF; // turn on mode led
-	LED_BLUE = LED_OFF; // turn on mode led
 	stateS = &waypointS;
-    desiredtailFlash = 5;
+    tailFlash = 5;
 }
 
 //	Come home state, entered when the radio signal is lost, and gps is locked.
@@ -370,11 +362,8 @@ static void ent_returnS(void)
 #endif
 
 	waggle = 0;
-	led_on(LED_RED);
-	LED_ORANGE = LED_ON; // turn on mode led
-	LED_BLUE = LED_ON; // turn on mode led
 	stateS = &returnS;
-    desiredtailFlash = 6;
+    tailFlash = 6;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -507,53 +496,98 @@ static void manualS(void)
 {
 	if (udb_flags._.radio_on)
 	{
+
 #ifdef CATAPULT_LAUNCH_ENABLE
-		if (launch_enabled() & flight_mode_switch_waypoints() & dcm_flags._.nav_capable)
-			ent_cat_armedS();
-		else
+        if (launch_enabled() & flight_mode_switch_waypoints() & dcm_flags._.nav_capable)
+        {
+            ent_cat_armedS();
+            return;
+        }
 #endif
-		if (flight_mode_switch_waypoints() & dcm_flags._.nav_capable)
-			ent_waypointS();
-		else if (flight_mode_switch_stabilize())
-			ent_stabilizedS();
-	}
-	else
-	{
-		if (dcm_flags._.nav_capable)
-		{
-			DPRINT("manualS() calling ent_returnS()\r\n");
-			ent_returnS();
-		}
-		else
-		{
-			ent_stabilizedS();
-		}
-	}
+    sw_manual    = flight_mode_switch_manual();
+    sw_stab      = flight_mode_switch_stabilize();
+    sw_waypoints = flight_mode_switch_waypoints();
+       // 1) Priorité absolue à MANUAL : si on y est déjà, on reste
+        if (sw_manual)
+        {
+            // on reste en MANUAL, rien à faire
+            return;
+        }
+
+        // 2) Sinon, STAB si demandé
+        if (sw_stab)
+        {
+            DPRINT("manualS() -> STABILIZED\r\n");
+            ent_stabilizedS();
+            return;
+        }
+
+        // 3) Sinon, WAYPOINT si demandé + GPS OK
+        if (sw_waypoints && dcm_flags._.nav_capable)
+        {
+            DPRINT("manualS() -> WAYPOINT\r\n");
+            ent_waypointS();
+            return;
+        }
+
+        // 4) Zone neutre : on reste en MANUAL
+        return;
+    }
+
+else 
+{
+
+    // Radio OFF : comportement failsafe inchangé
+    if (dcm_flags._.nav_capable)
+    {
+        DPRINT("manualS() -> RETURN (radio off)\r\n");
+        ent_returnS();
+    }
+    else
+    {
+        DPRINT("manualS() -> STABILIZED (radio off, no GPS)\r\n");
+        ent_stabilizedS();
+    }
+}
 }
 
 static void stabilizedS(void)
 {
-	udb_led_toggle(LED_ORANGE);
-	if (udb_flags._.radio_on)
-	{
+   if (!udb_flags._.radio_on) {
+        if (dcm_flags._.nav_capable) {
+            DPRINT("stabilizedS() -> RETURN (radio off)\r\n");
+            ent_returnS();
+        }
+        return;
+    }
+
 #ifdef CATAPULT_LAUNCH_ENABLE
 		if (launch_enabled() & flight_mode_switch_waypoints() & dcm_flags._.nav_capable)
-			ent_cat_armedS();
-		else
+        {
+            ent_cat_armedS();
+            return;
+        }
 #endif
-		if (flight_mode_switch_waypoints() & dcm_flags._.nav_capable)
-			ent_waypointS();
-		else if (flight_mode_switch_manual())
-			ent_manualS();
-	}
-	else
-	{
-		if (dcm_flags._.nav_capable)
-		{
-			DPRINT("stabilizedS() calling ent_returnS()\r\n");
-			ent_returnS();
-		}
-	}
+    // Lecture du switch une seule fois
+    sw_manual    = flight_mode_switch_manual();
+    sw_waypoints = flight_mode_switch_waypoints();
+
+    // 1) Si le switch demande MANUAL, on sort immédiatement en MANUAL
+    if (sw_manual) {
+        DPRINT("stabilizedS() -> MANUAL\r\n");
+        ent_manualS();
+        return;
+    }
+
+    // 2) Sinon, on ne considère que le cas WP si GPS OK
+    if (sw_waypoints && dcm_flags._.nav_capable) {
+        DPRINT("stabilizedS() -> WAYPOINT\r\n");
+        ent_waypointS();
+        return;
+    }
+
+    // 3) Sinon on reste en STAB (switch reste sur STAB)
+    // rien à faire
 }
 
 static void waypointS(void)
@@ -562,16 +596,40 @@ static void waypointS(void)
 
 	if (udb_flags._.radio_on)
 	{
-		if (flight_mode_switch_manual())
-			ent_manualS();
-		else if (flight_mode_switch_stabilize())
-			ent_stabilizedS();
-	}
-	else
-	{
-		DPRINT("waypointS() calling ent_returnS()\r\n");
-		ent_returnS();
-	}
+    sw_manual    = flight_mode_switch_manual();
+    sw_stab      = flight_mode_switch_stabilize();
+    sw_waypoints = flight_mode_switch_waypoints();
+        // 1) Priorité absolue à MANUAL
+        if (sw_manual)
+        {
+            DPRINT("waypointS() -> MANUAL\r\n");
+            ent_manualS();
+            return;
+        }
+
+        // 2) Ensuite STAB
+        if (sw_stab)
+        {
+            DPRINT("waypointS() -> STABILIZED\r\n");
+            ent_stabilizedS();
+            return;
+        }
+
+        // 3) Sinon, on reste en WP tant que le switch reste sur WP
+        if (sw_waypoints && dcm_flags._.nav_capable)
+        {
+            // rester en WAYPOINTS
+            return;
+        }
+
+        // 4) Zone neutre : par sécurité, on reste en WP (comportement conservateur)
+        return;
+    }
+    else
+    {
+        DPRINT("waypointS() -> RETURN (radio off)\r\n");
+        ent_returnS();
+    }
 }
 
 static void returnS(void)

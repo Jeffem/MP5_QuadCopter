@@ -26,6 +26,11 @@
 #include "../Config/options_multicopter.h"
 
 #define  MAX_PAUSE_TOGGLE  PID_HZ/2  // 20 frames at 40Hz is 1/2 second.
+// 0 = MAN, 1 = AUTO(STAB), 2 = HOME(WP)
+    static uint8_t mode_raw = 0;
+    static uint8_t mode_filtered = 0;
+    static uint8_t mode_stable_count = 0;
+    #define MODE_DEBOUNCE_COUNT  3  // besoin de 3 cycles d'affilée
 
 enum AUTOPILOT_MODE
 {
@@ -206,11 +211,11 @@ void control_mode_switch_check_set(void)
 {
 	if (udb_flags._.radio_on)
 	{
-		if (udb_pwIn[CTRL_MODE_SWITCH_INPUT_CHANNEL] < FLIGHT_MODE_SWITCH_THRESHOLD_LOW)
+		if (udb_pwIn[CTRL_MODE_SWITCH_INPUT_CHANNEL] < CTRL_MODE_SWITCH_THRESHOLD_LOW)
 		{
 			control_mode = TILT_MODE;
 		}
-		else if (udb_pwIn[CTRL_MODE_SWITCH_INPUT_CHANNEL] < FLIGHT_MODE_SWITCH_THRESHOLD_HIGH )
+		else if (udb_pwIn[CTRL_MODE_SWITCH_INPUT_CHANNEL] < CTRL_MODE_SWITCH_THRESHOLD_HIGH )
 		{
 			control_mode = RATE_MODE;
 		}
@@ -260,15 +265,11 @@ void flight_mode_switch_check_set(void)
 		// Select manual, automatic, or come home, based on pulse width of the switch input channel as defined in options.h.
 		if (udb_pwIn[FLIGHT_MODE_SWITCH_INPUT_CHANNEL] > FLIGHT_MODE_SWITCH_THRESHOLD_HIGH)
 		{
-			state_flags._.man_req = 0;
-			state_flags._.auto_req = 0;
-			state_flags._.home_req = 1;
+        mode_raw = 2; // HOME / WP
 		}
 		else if (udb_pwIn[FLIGHT_MODE_SWITCH_INPUT_CHANNEL] > FLIGHT_MODE_SWITCH_THRESHOLD_LOW)
 		{
-			state_flags._.man_req = 0;
-			state_flags._.auto_req = 1;
-			state_flags._.home_req = 0;
+        mode_raw = 1; // AUTO / STAB
 		}
 		else
 		{
@@ -279,11 +280,43 @@ void flight_mode_switch_check_set(void)
 			state_flags._.home_req = 0;
 			
 			#else
-			state_flags._.man_req = 1;
-			state_flags._.auto_req = 0;
-			state_flags._.home_req = 0;
+            mode_raw = 0; // MANUAL
 			#endif
 		}
+        // 2) Hystérésis temporelle (debounce)
+        if (mode_raw == mode_filtered)
+        {
+            // rien à faire, déjà stable
+            mode_stable_count = 0;
+        }
+        else
+        {
+            if (++mode_stable_count >= MODE_DEBOUNCE_COUNT)
+            {
+            mode_filtered = mode_raw;
+            mode_stable_count = 0;
+            }
+        }
+    
+        // 3) Appliquer mode_filtered à state_flags
+        if (mode_filtered == 2)
+        {
+            state_flags._.man_req  = 0;
+            state_flags._.auto_req = 0;
+            state_flags._.home_req = 1;
+        }
+        else if (mode_filtered == 1)
+        {
+            state_flags._.man_req  = 0;
+            state_flags._.auto_req = 1;
+            state_flags._.home_req = 0;
+        }
+        else // 0 -> MANUAL
+        {
+            state_flags._.man_req  = 1;
+            state_flags._.auto_req = 0;
+            state_flags._.home_req = 0;
+        }
 #endif // MODE_SWITCH_TWO_POSITION
 		// With Failsafe Hold enabled: After losing RC signal, and then regaining it, you must manually
 		// change the mode switch position in order to exit RTL mode.

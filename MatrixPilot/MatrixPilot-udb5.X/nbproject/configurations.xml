@@ -464,6 +464,7 @@
         <itemPath>../../libUDB/uart.c</itemPath>
         <itemPath>../../libUDB/write.c</itemPath>
         <itemPath>../../libUDB/Lidar.c</itemPath>
+        <itemPath>../../libUDB/config_bits.c</itemPath>
       </logicalFolder>
       <logicalFolder name="libVectorMatrix"
                      displayName="libVectorMatrix"
