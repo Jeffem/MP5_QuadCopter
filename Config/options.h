@@ -177,6 +177,7 @@
 // Define USE_LIDAR_ALTITUDE to be 1 to use Lidar Lite V3 for altitude correction.
 #ifndef USE_LIDAR_ALTITUDE
 #define USE_LIDAR_ALTITUDE                  1
+#define MIN_LIDAR_PULSE_Thresh              2
 #endif
 
 // Racing Mode
@@ -253,7 +254,7 @@
 // For UDB4/5 boards: Set to 3-8 (or up to 10 using pins RA4 and RA1.)
 // For AUAV3 boards:  Set to 3-8 (or up to 11 using pins RE1, RA6 and RA7.)
 //                               (this needs developing, so contact the list)
-#define NUM_OUTPUTS                         5
+#define NUM_OUTPUTS                         6
 
 // Channel numbers for each output
 // Use as is, or edit to match your setup.
@@ -306,10 +307,10 @@
 // Often the Flap channel will be controlled by a 3-position switch.
 // These are the thresholds for the cutoffs between low and middle, and between middle and high.
 // Normal signals should fall within about 2000 - 4000.
-#define FLIGHT_MODE_SWITCH_THRESHOLD_LOW           2640
-#define FLIGHT_MODE_SWITCH_THRESHOLD_HIGH          3440
-#define CTRL_MODE_SWITCH_THRESHOLD_LOW             2640
-#define CTRL_MODE_SWITCH_THRESHOLD_HIGH            3440
+#define FLIGHT_MODE_SWITCH_THRESHOLD_LOW           2600
+#define FLIGHT_MODE_SWITCH_THRESHOLD_HIGH          3400
+#define CTRL_MODE_SWITCH_THRESHOLD_LOW             2600
+#define CTRL_MODE_SWITCH_THRESHOLD_HIGH            3400
 
 
 // Setting MODE_SWITCH_TWO_POSITION to 1,  allows a two state mode switch on the transmitter to be used
@@ -338,8 +339,8 @@
 // FAILSAFE_INPUT_MIN and _MAX define the range within which we consider the radio on.
 // Normal signals should fall within about 2000 - 4000.
 #define FAILSAFE_INPUT_CHANNEL        CHANNEL_5
-#define FAILSAFE_INPUT_MIN                  2140// modif gfm correspodant au 2200 du propre failsafle de la Graupner MX12
-#define FAILSAFE_INPUT_MAX                 4000
+#define FAILSAFE_INPUT_MIN                  1800// modif gfm correspodant au 2000 du propre failsafle de la Graupner MX12
+#define FAILSAFE_INPUT_MAX                 4200
 
 // FAILSAFE_TYPE controls the UDB's behavior when in failsafe mode due to loss of transmitter
 // signal.  (Set to FAILSAFE_RTL or FAILSAFE_MAIN_FLIGHTPLAN.)
