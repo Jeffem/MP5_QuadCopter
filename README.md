@@ -1,101 +1,38 @@
-[![Build Status](https://travis-ci.org/mavlink/mavlink.svg?branch=master)](https://travis-ci.org/mavlink/mavlink)
+# MatrixPilot 
 
-## MAVLink ##
+[Travis CI](https://travis-ci.org/MatrixPilot/MatrixPilot) ![Travis CI](https://api.travis-ci.org/MatrixPilot/MatrixPilot.svg?branch=master)
 
-*   Official Website: http://mavlink.org
-*   Source: [Mavlink Generator](https://github.com/mavlink/mavlink)
-*   Binaries (always up-to-date from master):
-  * [C/C++ header-only library v1](https://github.com/mavlink/c_library_v1)
-  * [C/C++ header-only library v2](https://github.com/mavlink/c_library_v2)
-*   Mailing list: [Google Groups](http://groups.google.com/group/mavlink)
+## Firmware for Bill Premerlani's IMU based UAV Dev Board and its successors
 
-MAVLink -- Micro Air Vehicle Message Marshalling Library.
+Welcome to the MatrixPilot codebase. Four board types are supported:-
+* the [UDB4](https://www.sparkfun.com/products/retired/11115) (Production retired at SparkFun)
+* the [UDB5](https://www.sparkfun.com/products/retired/11703) (Production retired at SparkFun)
+* the UDB5 project in software also supports the [UDB5mini](https://octopilot.com/) currently available from Octopilot Electronics
+* the AUAV3 from Arsov RC Technology. (Production retired).
 
-This is a library for lightweight communication between drones and/or ground control stations. It allows for defining messages within XML files, which then are converted into appropriate source code for different languages. These XML files are called dialects, most of which build on the *common* dialect provided in `common.xml`.
+Projects for the boards are provided for the MPLAB-X Integrated Development Environment (IDE) and XC16 compiler. From October 2016, the master branch no longer supports the legacy MPLAB IDE.
 
-The initial experimental MAVLink was created 2008 when the term drone was not used yet to describe small vehicles for consumer use.
+There are 4 projects in the repository. They are listed here in order of increasing complexity:-
 
-The MAVLink protocol performs byte-level serialization and so is appropriate for use with any type of radio modem.
+* ./Tools/FlashOSD updates the character set of the native On Screen Display (OSD; additional OSD board required). 
+* ./Tools/LedTest is used to test hardware including the accelerometers, gyros, Leds, and PWM outputs.It is factory installed for 3 boards allowing users to test their boards on delivery.
+* ./RollPitchYaw creates an Inertial Measurement Unit (IMU). It  enables higher level testing of the IMU algorithms, firmware and hardware all combined together.
+* ./MatrixPilot integrates the IMU with a full Autopilot for a plane, providing Fly By Wire control, Autonomous flight, Return to Landing (RTL), and Manual overide. 
 
-This repository is largely Python scripts that convert XML files into language-specific libraries. There are additional Python scripts providing examples and utilities for working with MAVLink data. These scripts, as well as the generated Python code for MAVLink dialects, require Python 2.7 or greater.
+There are two types of simulation avaiable:-
+* Software in the Loop (SIL) is provided in ./Tools/MatrixPilot-SIL. The autopilot is simulated as a software process in a host computer (Unix, MacOS, Windows) and that is then, in turn, connected to fly an aircraft in the X-Plane 10 flight simulator.
+* Hardware in the Loop (HIL) connects a physical board running MatrixPilot to a simulated aircraft in X-Plane 10. It is enabled for any board by setting a parameter in ./Config/options.h when compiling MatrixPilot. 
 
-### Requirements ###
-  * Python 2.7+
-    * Tkinter (if GUI functionality is desired)
+./Tools/HilSim provides the software plugin for X-Plane10 to link to the SIL or HIL versions of MatrixPilot. 
 
-### Installation ###
-  1. Clone into a user-writable directory. Make sure to use the git "--recursive" option since pymavlink is a submodule. Alternately, run "git submodule init" and "git submodule update" after cloning to get pymavlink.
-  2. Add the repository directory to your `PYTHONPATH`
-  3. Generate MAVLink parser files following the instructions in the next section *AND/OR* run included helper scripts described in the Scripts/Examples secion.
+./Tools/flight_analyzer provides a python program that allows analysis and display of flights with the help of GoogleEarth, after post-processing with our tool 'flan'.
 
-### Generating Language-specific Source Files ###
+For developers, there is also a makefile based build system (build-all.bat) and a project generator (Tools/Build/proj_gen.bat), which both Windows and *nix compatible.
 
-Language-specific files can be generated via a Python script from the command line or using a GUI. If a dialect XML file has a dependency on another XML file, they must be located in the same directory. Since most MAVLink dialects depend on the **common** messageset, it is recommend that you place your dialect with the others in `/message_definitions/v1.0/`.
+For more info about how to configure and use this autopilot firmware, go to the Wiki at:
 
-Available languages are:
+   https://github.com/MatrixPilot/MatrixPilot/wiki
 
-  * C
-  * C#
-  * Java
-  * JavaScript
-  * Lua
-  * Python, version 2.7+
+and see the mailing list at:
 
-#### From a GUI (recommended) ####
-
-mavgenerate.py is a header generation tool GUI written in Python. It requires Tkinter, which is only included with Python on Windows, so it will need to be installed separately on non-Windows platforms. It can be run from anywhere using Python's -m argument:
-
-    $ python -m mavgenerate
-
-#### From the command line ####
-
-mavgen.py is a command-line interface for generating a language-specific MAVLink library. This is actually the backend used by `mavgenerate.py`. After the `mavlink` directory has been added to the Python path, it can be run by executing from the command line:
-
-    $ python -m pymavlink.tools.mavgen
-
-### Usage ###
-
-Using the generated MAVLink dialect libraries varies depending on the language, with language-specific details below:
-
-#### C ####
-To use MAVLink, include the *mavlink.h* header file in your project:
-
-    #include <mavlink.h>
-
-Do not include the individual message files. In some cases you will have to add the main folder to the include search path as well. To be safe, we recommend these flags:
-
-    $ gcc -I mavlink/include -I mavlink/include/<your message set, e.g. common>
-
-The C MAVLink library utilizes a channels metaphor to allow for simultaneous processing of multiple MAVLink streams in the same program. It is therefore important to use the correct channel for each operation as all receiving and transmitting functions provided by MAVLink require a channel. If only one MAVLink stream exists, channel 0 should be used by using the `MAVLINK_COMM_0` constant.
-
-##### Receiving ######
-MAVLink reception is then done using `mavlink_helpers.h:mavlink_parse_char()`.
-
-##### Transmitting #####
-Transmitting can be done by using the `mavlink_msg_*_pack()` function, where one is defined for every message. The packed message can then be serialized with `mavlink_helpers.h:mavlink_msg_to_send_buffer()` and then writing the resultant byte array out over the appropriate serial interface.
-
-It is possible to simplify the above by writing wrappers around the transmitting/receiving code. A multi-byte writing macro can be defined, `MAVLINK_SEND_UART_BYTES()`, or a single-byte function can be defined, `comm_send_ch()`, that wrap the low-level driver for transmitting the data. If this is done, `MAVLINK_USE_CONVENIENCE_FUNCTIONS` must be defined.
-
-### Scripts/Examples ###
-This MAVLink library also comes with supporting libraries and scripts for using, manipulating, and parsing MAVLink streams within the pymavlink, pymav
-link/tools, and pymavlink/examples directories.
-
-The scripts have the following requirements:
-  * Python 2.7+
-  * mavlink repository folder in `PYTHONPATH`
-  * Write access to the entire `mavlink` folder.
-  * Your dialect's XML file is in `message_definitions/*/`
-
-Running these scripts can be done by running Python with the '-m' switch, which indicates that the given script exists on the PYTHONPATH. This is the proper way to run Python scripts that are part of a library as per PEP-328 (and the rejected PEP-3122). The following code runs `mavlogdump.py` in `/pymavlink/tools/` on the recorded MAVLink stream `test_run.mavlink` (other scripts in `/tools` and `/scripts` can be run in a similar fashion):
-
-    $ python -m pymavlink.tools.mavlogdump test_run.mavlink
-
-### License ###
-
-MAVLink is licensed under the terms of the Lesser General Public License (version 3) of the Free Software Foundation (LGPLv3). The C-language version of MAVLink is a header-only library which is generated as MIT-licensed code. MAVLink can therefore be used without limits in any closed-source application without publishing the source code of the closed-source application.
-
-See the *COPYING* file for more info.
-
-### Credits ###
-
-&copy; 2009-2014 [Lorenz Meier](mailto:mail@qgroundcontrol.org)
+   https://groups.google.com/forum/#!forum/uavdevboard

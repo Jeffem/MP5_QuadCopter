@@ -442,9 +442,9 @@
 // All gains should be positive real numbers.
 // Proportional gains should be less than 4.0.
 // Rate gains should be less than 0.8.
-// Proportional gains include ROLLKP, YAWKP_AILERON, AILERON_BOOST, PITCHGAIN,
+// Proportional gains include ROLLKP, YAWKP_AILERON, AILERON_BOOST, PITCHKP,
 // RUDDER_ELEV_MIX, ROLL_ELEV_MIX, ELEVATOR_BOOST, YAWKP_RUDDER, ROLLKP_RUDDER,
-// MANUAL_AILERON_RUDDER_MIX, RUDDER_BOOST, HOVER_ROLLKP, HOVER_PITCHGAIN, HOVER_YAWKP
+// MANUAL_AILERON_RUDDER_MIX, RUDDER_BOOST, HOVER_ROLLKP, HOVER_PITCHKP, HOVER_YAWKP
 // Rate gains include ROLLKD, YAWKD_AILERON, PITCHKD, YAWKD_RUDDER, ROLLKD_RUDDER,
 // HOVER_ROLLKD, HOVER_PITCHKD, HOVER_YAWKD
 
@@ -465,12 +465,12 @@
 #define AILERON_BOOST                       0.5
 
 // Elevator/Pitch Control Gains
-// PITCHGAIN is the pitch stabilization gain, typically around 0.125
+// PITCHKP is the pitch stabilization gain, typically around 0.125
 // PITCHKD feedback gain for pitch damping, around 0.0625
 // RUDDER_ELEV_MIX is the degree of elevator adjustment for rudder and banking
 // AILERON_ELEV_MIX is the degree of elevator adjustment for aileron
 // ELEVATOR_BOOST is the additional gain multiplier for the manually commanded elevator deflection
-#define PITCHGAIN                           0.03 // 0.150
+#define PITCHKP                           0.03 // 0.150
 #define PITCHKD                             0.015 // 0.075
 #define RUDDER_ELEV_MIX                     0.04
 #define ROLL_ELEV_MIX                       0.02

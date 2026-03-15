@@ -33,7 +33,7 @@
 // gfm : SCALEACCEL=5280/1024/ACCEL_RANGE ; 5280 is defined for GRAVITY in libUDB_defines.h
 #define SCALEACCEL          1.29    // 4 g range
 
-#define NUM_ANALOG_INPUTS   1
+#define NUM_ANALOG_INPUTS   2
 
 // External A/D channels:
 #define analogInput1BUFF    3

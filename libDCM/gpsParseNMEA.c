@@ -647,7 +647,7 @@ static void gps_checksum(uint8_t gpschar)   // checksum calculation
 		}
 	}
 #ifdef DEBUG_NMEA
-	//led_off(LED_RED);
+	led_off(LED_RED);
 #endif
 }
 

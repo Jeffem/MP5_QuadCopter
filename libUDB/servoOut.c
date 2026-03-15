@@ -29,7 +29,8 @@
 #include "../Config/options_multicopter.h"
 /*
 #include "oscillator.h"
- * #if AIRFRAME_TYPE != AIRFRAME_QUAD
+
+#if AIRFRAME_TYPE != AIRFRAME_QUAD
 #if (MIPS == 64)
 #define SCALE_FOR_PWM_OUT(x)    (x/2)
 #elif (MIPS == 32)

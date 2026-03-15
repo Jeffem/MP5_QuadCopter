@@ -494,7 +494,10 @@ static void MAVParamsSet(const mavlink_message_t* handle_msg)
                                                 send_msg_AID_INI(AID_INI);
                                                 flag = true;
                                                 }
-                                                if (flag) gpsoutbin(AID_INI_length, AID_INI);
+                                                if (flag) {
+                                                    gpsoutbin(AID_INI_length, AID_INI);
+                                                    //gps_commit_data(); 
+                                                }
 // fin modif gfm
 		}
 		else

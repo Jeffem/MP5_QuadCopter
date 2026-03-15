@@ -58,8 +58,8 @@
 
 //#define MAG_FORWARDS
 //#define MAG_BACKWARDS
-//#define MAG_INVERTED
-#define MAG_FLIPPED
+#define MAG_INVERTED
+//#define MAG_FLIPPED
 //#define MAG_DIRECT
 
 // Uncomment the following line for using Static Magnetometer Offsets. 

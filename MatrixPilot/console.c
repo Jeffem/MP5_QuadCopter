@@ -147,7 +147,7 @@ static void cmd_gains(char* arg)
 	printf("ROLLKP: %f\r\n", (double)gains.RollKP);
 	printf("ROLLKD: %f\r\n", (double)gains.RollKD);
 //	printf("AILERON_BOOST: %f\r\n", (double)gains.AileronBoost);
-	printf("PITCHGAIN: %f\r\n", (double)gains.Pitchgain);
+	printf("PITCHKP: %f\r\n", (double)gains.PitchKP);
 	printf("PITCHKD: %f\r\n", (double)gains.PitchKD);
 //	printf("RUDDER_ELEV_MIX: %f\r\n", (double)gains.RudderElevMix);
 //	printf("ROLL_ELEV_MIX: %f\r\n", (double)gains.RollElevMix);

@@ -311,7 +311,7 @@ void get_angleMode_commands(struct int_RPY* command, int tiltGain) {
     if (rateCounter++ > 7) {
         rateCounter = 0;
         // manual angle flight mode: +/-XX degrees of roll/pitch
-        command->roll = (pwManual[AILERON_INPUT_CHANNEL] - udb_pwTrim[AILERON_INPUT_CHANNEL]) * tiltGain;
+        command->roll = ((pwManual[AILERON_INPUT_CHANNEL] - udb_pwTrim[AILERON_INPUT_CHANNEL])* tiltGain) >> 1;
         command->pitch = (pwManual[ELEVATOR_INPUT_CHANNEL] - udb_pwTrim[ELEVATOR_INPUT_CHANNEL]) * tiltGain;
 
         // apply slew rate limit to roll and pitch
@@ -330,9 +330,9 @@ void get_angleMode_commands(struct int_RPY* command, int tiltGain) {
 //        x_rotate(command);
 
         // yaw is always rate mode
-//        updateYaw(command);
-        command->yaw = YAW_SIGN * (pwManual[RUDDER_INPUT_CHANNEL] - udb_pwTrim[RUDDER_INPUT_CHANNEL]);
-        magClampYAW(command, YAW_CLAMP);// ajout gfm
+        updateYaw(command);
+//        command->yaw = YAW_SIGN * (pwManual[RUDDER_INPUT_CHANNEL] - udb_pwTrim[RUDDER_INPUT_CHANNEL]);
+//        magClampYAW(command, YAW_CLAMP);// ajout gfm
     }
 }
 
@@ -363,7 +363,7 @@ void motorCntrl(void) {
         motorsArmed = 0;
         LED_ORANGE = LED_OFF;
     } else {
-        switch (motorsArmed) {
+            switch (motorsArmed) {
             case 0:
                 // wait for high throttle
                 if ((pwManual[THROTTLE_INPUT_CHANNEL] - udb_pwTrim[THROTTLE_INPUT_CHANNEL]) > (SERVORANGE / 2))
@@ -437,15 +437,13 @@ void motorCntrl(void) {
         } else if (control_mode == RATE_MODE) {
             // manual (rate) flight mode
             get_rateMode_commands(&cmd_RPY);
-            //get_rateMode_commands(&cmd_RPY);
-            get_angleMode_commands(&cmd_RPY, CMD_TILT_GAIN);
             updateYaw(&cmd_RPY);
         } else if (control_mode == COMPASS_MODE) {
             // manual mode: forward cyclic is North
+            //rotate forward stick North (angle -heading);
+            //rotateRP(&cmd_RPY, (-earth_yaw) >> 8);
+            //cmd_RPY.yaw = 0;    // Point straight north
             get_angleMode_commands(&cmd_RPY, CMD_TILT_GAIN);
-            // rotate forward stick North (angle -heading)
-//            rotateRP(&cmd_RPY, (-earth_yaw) >> 8);
-            cmd_RPY.yaw = 0;    // Point straight north
         }
         adv_RPY.roll = cmd_RPY.roll-roll_control;
         adv_RPY.pitch = -1*(cmd_RPY.pitch+pitch_control);
@@ -457,11 +455,11 @@ void motorCntrl(void) {
 
         // Compute the signals that are common to all 4 motors
         // Mix in the yaw, pitch, and roll signals into the motors
-        if (state_flags._.man_req){
+//        if (state_flags._.man_req){
         if (!state_flags._.altitude_hold_throttle )
             motorOut(pwManual[THROTTLE_INPUT_CHANNEL], &adv_RPY);
         else
             motorOut(udb_pwTrim[THROTTLE_INPUT_CHANNEL]+(int)throttle_control, &adv_RPY);
-        }
+//        }
     }
 }

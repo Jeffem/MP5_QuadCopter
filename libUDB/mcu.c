@@ -28,7 +28,7 @@
 #include <stdio.h>
 
 #if (BOARD_TYPE == UDB4_BOARD || BOARD_TYPE == UDB5_BOARD)
- #include <p33Fxxxx.h>
+#include <p33Fxxxx.h>
 #ifdef __XC16__
 /* modif gfm : repostés dans config_bits
 #pragma config FNOSC = PRIPLL
@@ -316,7 +316,8 @@ static void configureDigitalIO(void) // UDB4 and UDB5 boards
 #endif
 	TRISF = 0b1111111111101100;
 #if (USE_LIDAR_ALTITUDE	== 1)
-        LIDAR_Trigger = 1;_TRISA4 = 0;// Sortie digitale
+//        LIDAR_Trigger = 1;_TRISA4 = 0;// Sortie digitale
+        LIDAR_Trigger = 1;_TRISC1 = 0;// Sortie digitale pour USB5 mini
         _LATA1 = LED_OFF;_TRISA1 = 1;// Input Lidar PWM
 #endif
 }
