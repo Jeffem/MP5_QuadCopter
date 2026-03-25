@@ -47,7 +47,7 @@ int barometer_temperature_gnd = 0;
 static long barometer_altitude;        // above sea level altitude - ASL (millimeters)
 int32_t barometer_agl_altitude;
 static int32_t barometer_agl_altitude_1;    // previous above ground level altitude - AGL
-
+boolean imu_dominant = false;
 long barometer_pressure;
 int barometer_temperature;  //Degrés Centigrades
 float sea_level_pressure;
@@ -64,7 +64,7 @@ uint32_t        alpha,beta;              // filter coefficients
 static uint16_t val_baro,val_lidar,val_IMU;              // altitude validities
 static uint16_t baro_confiance=2;            //Altitudes confidences
 static uint16_t lidar_confiance=10;
-static uint16_t IMU_confiance=0;
+static uint16_t IMU_confiance=10;
 int32_t fusion,vze,vze_fusion;                // Altitude fusion output (in mm)
 int32_t estimated_altitude;        //  (millimeters)
 int16_t vtemp;
@@ -80,7 +80,7 @@ int16_t barometerInterval = 0;
  */
 void altimeter_calibrate(void)
 {
-    qual_IMU = 2;
+    qual_IMU = 4;
     IMU_altitude_1 = 0;
     IMU_altitude = 0;
     vze_IMU = 0;
@@ -105,13 +105,14 @@ void altimeter_calibrate(void)
 #endif
 #if (USE_LIDAR_ALTITUDE >0)
        vze_lidar = 0;
+       lidar_altitude = 0;
 #endif  //LIDAR_ALTITUDE > 0
     fusion = 0;
     vze_fusion = 0;
-    qual_lidar = 2;
+    qual_lidar = 4;
     lidar_altitude_1 = lidar_altitude;
     lidar_altitude_pred = lidar_altitude;
-    qual_baro = 0;
+    qual_baro = 10;
     val_baro = 0;
     val_lidar = 0;
     val_IMU = 0;
@@ -167,6 +168,9 @@ void estAltitude(void)
 #endif
     }
 #elif (USE_BAROMETER_ALTITUDE == 2)
+int32_t e_baro  = barometer_agl_altitude - fusion;
+int32_t ae_baro = labs(e_baro);
+
         barometer_agl_altitude = barometer_altitude - barometer_altitude_gnd;
 #ifdef USE_DEBUG_IO
 		// estimate sea level pressure assuming we're still on the ground
@@ -192,52 +196,60 @@ void estAltitude(void)
       /*======================================================================*/
       // IMU altitude filter and offset compensation using IMUvelocityz (in mm/s)
       IMU_altitude = IMUlocationz._.W1;
+// --- erreurs par rapport à la fusion actuelle ---
+int32_t e_IMU  = IMU_altitude - fusion;
+int32_t ae_IMU = labs(e_IMU);
 
-      // Update qualities
-      if (abs(IMU_altitude - fusion)<1000)
-      {         
-          if (qual_IMU <4 ) qual_IMU=qual_IMU+1;
-      }
-      else
-      {        
-          if (qual_IMU>2)  qual_IMU=qual_IMU-1;
-      }
-       
+
+// --- IMU : qual_IMU entre 1 et 4 ---
+if (ae_IMU <100) {
+    if (qual_IMU > 2) qual_IMU--;
+} else if (ae_IMU > 500) {
+    if (qual_IMU < 8) qual_IMU++;
+}
 #if USE_BAROMETER_ALTITUDE>0
-      if (abs(barometer_agl_altitude - fusion)<1000)
-      {          
-          if (qual_baro <60 ) qual_baro=qual_baro+1;
-      }
-      else
-      {          
-          if (qual_baro>10) qual_baro=qual_baro-1;
-      }
+// --- Baromètre : qual_baro entre 10 et 60 ---
+if (ae_baro <1000) {
+    if (qual_baro > 10) qual_baro--;
+} else if (ae_baro > 3000) {
+    if (qual_baro < 20) qual_baro++;
+}
 #endif
 #if USE_LIDAR_ALTITUDE>0
-      if (abs(lidar_altitude - fusion)<500)
-      {          
-          if (qual_lidar <8 ) qual_lidar=qual_lidar+1;
-      }
-      else
-      {         
-          if (qual_lidar>2) qual_lidar=qual_lidar-1;
-      }
+int32_t e_lidar  = lidar_altitude - fusion;
+int32_t ae_lidar = labs(e_lidar);
+
+// --- Lidar : qual_lidar entre 2 et 8 ---
+if (ae_lidar < 1000) {
+    if (qual_lidar > 2) qual_lidar--;
+} else if (ae_lidar > 1500) {
+    if (qual_lidar < 8) qual_lidar++;
+}
 #endif
 
-// Lidar confidence when altitude is lower than 12 m 
-      if (IMU_altitude<12000) {         
-         baro_confiance=0;
-         lidar_confiance=10;
-      }
-      else if (IMU_altitude<16000) { //between 12 and 16 m, weighting between Lidar and Baro          
-          baro_confiance=6*(IMU_altitude-12000)/12000;
-          lidar_confiance=10-30*(IMU_altitude-12000)/12000;
-            }
-          else
-          {     //No more Lidar confidence above 16 m, Baro only is used
-          baro_confiance=2;
-          lidar_confiance=0;
-          }
+if (IMU_altitude < 12000) {
+    // < 12 m : Lidar dominant, Baro très affaibli
+    baro_confiance  = 0;
+    lidar_confiance = 40;
+}
+else if (IMU_altitude < 16000) {
+    // 12?16 m : transition linéaire Lidar -> Baro
+    int32_t dz = IMU_altitude - 12000; // 0..4000
+
+    // t = dz / 4000, en float simple (ou fixe si tu préfères)
+    float t = (float)dz / 4000.0f; // 0 -> 1
+
+    // Lidar : 10 -> 0
+    lidar_confiance = (uint16_t)(40.0f * (1.0f - t));
+
+    // Baro : 0 -> 2
+    baro_confiance  = (uint16_t)(20.0f * t);
+}
+else {
+    // > 16 m : Lidar ignoré, Baro nominal
+    baro_confiance  = 20;
+    lidar_confiance = 0;
+}
 //         lidar_confiance=10;
 //         IMU_confiance=0;
       
@@ -299,18 +311,18 @@ void estAltitude(void)
       lidar_altitude_1 = lidar_altitude_pred >> 10;
 #endif
 
-      // update confidences
-      val_IMU = __builtin_muluu(qual_IMU , IMU_confiance)<<1  ;//val_IMU max = 4*5*2=40
+      // update validities
+       val_IMU = (uint16_t) ((IMU_confiance)/qual_IMU)  ;//val_IMU max = 20/1=20
       if (( IMU_altitude_1 < -100) || (abs(IMU_altitude_1 - fusion)>4000)|| (val_lidar>10))  val_IMU = 0;
 #if USE_BAROMETER_ALTITUDE>0
-      val_baro = __builtin_muluu(qual_baro , baro_confiance);   //val_baro max = 60
-      if (( barometer_agl_altitude_1 < -4000) || (abs(barometer_agl_altitude_1 - fusion)>10000)) val_baro = 0;
+      val_baro = (uint16_t) ((baro_confiance)/qual_baro);   //val_baro max = 0.2
+      if (( barometer_agl_altitude_1 < -4000) || (abs(barometer_agl_altitude_1 - fusion)>5000)) val_baro = 0;
 #else
       val_baro = 0;
 #endif
 #if USE_LIDAR_ALTITUDE>0
-      val_lidar = __builtin_muluu(qual_lidar , lidar_confiance)>>1;// val_lidar max = 8*10/2=40
-      if ((abs(lidar_altitude_1 - fusion)>6000)) val_lidar = 0;
+      val_lidar = (uint16_t) ((lidar_confiance)/qual_lidar);// val_lidar max = 40/2=20
+      if ((abs(lidar_altitude_1 - fusion)>2000)) val_lidar = 0;
 #else
       val_lidar = 0;
 #endif
@@ -318,6 +330,12 @@ void estAltitude(void)
 //      val_GPS := qual_GPS * GPS_Confiance;
 //      if (( GPS = 0.0) OR (abs(GPS - Alti)>0.5)) then val_GPS := 0.0;
 
+
+  // calculs val_IMU, val_baro, val_lidar comme dans EstimAlt
+      uint16_t sum_val = val_IMU + val_baro + val_lidar;
+
+// ratio de dominance IMU
+      imu_dominant = (sum_val > 0) && (val_IMU > 3 * (val_baro + val_lidar));
 
       // compute fusion
       if ((val_baro>0.0) || (val_lidar>0.0) || (val_IMU>0.0))

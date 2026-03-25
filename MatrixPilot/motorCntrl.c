@@ -368,9 +368,9 @@ void motorCntrl(void) {
                 // wait for high throttle
                 if ((pwManual[THROTTLE_INPUT_CHANNEL] - udb_pwTrim[THROTTLE_INPUT_CHANNEL]) > (SERVORANGE / 2))
                     motorsArmed = 1;
-                    //LED_ORANGE = LED_ON;
-                    //LED_RED = LED_OFF;
-                    //LED_BLUE = LED_OFF;
+                    LED_ORANGE = LED_ON;
+//                    LED_RED = LED_OFF;
+                    LED_BLUE = LED_OFF;
                 break;
             case 1:
                 // wait for low throttle and > half right rudder
@@ -378,9 +378,9 @@ void motorCntrl(void) {
                         (udb_pwIn[RUDDER_INPUT_CHANNEL] - udb_pwTrim[RUDDER_INPUT_CHANNEL]) > (SERVORANGE / 2)
                         ) {
                     motorsArmed = 2;
-                    //LED_ORANGE = LED_OFF;
-                    //LED_RED = LED_OFF;
-                    //LED_BLUE= LED_OFF;
+                    LED_ORANGE = LED_OFF;
+                    LED_RED = LED_OFF;
+                    LED_BLUE = LED_ON;
                 }
                 break;
             case 2:
@@ -389,9 +389,9 @@ void motorCntrl(void) {
                         (udb_pwIn[RUDDER_INPUT_CHANNEL] - udb_pwTrim[RUDDER_INPUT_CHANNEL]) < THROTTLE_DEADBAND
                         ) {
                     motorsArmed = 3;
-                    //LED_ORANGE = LED_OFF;
-                    //LED_RED = LED_ON;
-                    //LED_BLUE = LED_OFF;
+                    LED_ORANGE = LED_OFF;
+                    LED_RED = LED_OFF;
+                    LED_BLUE = LED_OFF;
                 }
                 break;
             case 3:
@@ -400,9 +400,9 @@ void motorCntrl(void) {
                         (udb_pwIn[RUDDER_INPUT_CHANNEL] - udb_pwTrim[RUDDER_INPUT_CHANNEL]) < -(SERVORANGE / 2)
                         ) {
                     motorsArmed = 4;
-                    //LED_RED = LED_OFF;
-                    //LED_ORANGE = LED_OFF;
-                    //LED_BLUE = LED_OFF;
+                    LED_RED = LED_ON;
+                    LED_ORANGE = LED_OFF;
+                    LED_BLUE = LED_OFF;
                 }
                 break;
         }

@@ -265,11 +265,15 @@ void flight_mode_switch_check_set(void)
 		// Select manual, automatic, or come home, based on pulse width of the switch input channel as defined in options.h.
 		if (udb_pwIn[FLIGHT_MODE_SWITCH_INPUT_CHANNEL] > FLIGHT_MODE_SWITCH_THRESHOLD_HIGH)
 		{
-        mode_raw = 2; // HOME / WP
+			state_flags._.man_req = 0;
+			state_flags._.auto_req = 0;
+			state_flags._.home_req = 1;
 		}
 		else if (udb_pwIn[FLIGHT_MODE_SWITCH_INPUT_CHANNEL] > FLIGHT_MODE_SWITCH_THRESHOLD_LOW)
 		{
-        mode_raw = 1; // AUTO / STAB
+			state_flags._.man_req = 0;
+			state_flags._.auto_req = 1;
+			state_flags._.home_req = 0;
 		}
 		else
 		{
@@ -280,43 +284,11 @@ void flight_mode_switch_check_set(void)
 			state_flags._.home_req = 0;
 			
 			#else
-            mode_raw = 0; // MANUAL
+			state_flags._.man_req = 1;
+			state_flags._.auto_req = 0;
+			state_flags._.home_req = 0;
 			#endif
 		}
-        // 2) Hystérésis temporelle (debounce)
-        if (mode_raw == mode_filtered)
-        {
-            // rien à faire, déjà stable
-            mode_stable_count = 0;
-        }
-        else
-        {
-            if (++mode_stable_count >= MODE_DEBOUNCE_COUNT)
-            {
-            mode_filtered = mode_raw;
-            mode_stable_count = 0;
-            }
-        }
-    
-        // 3) Appliquer mode_filtered à state_flags
-        if (mode_filtered == 2)
-        {
-            state_flags._.man_req  = 0;
-            state_flags._.auto_req = 0;
-            state_flags._.home_req = 1;
-        }
-        else if (mode_filtered == 1)
-        {
-            state_flags._.man_req  = 0;
-            state_flags._.auto_req = 1;
-            state_flags._.home_req = 0;
-        }
-        else // 0 -> MANUAL
-        {
-            state_flags._.man_req  = 1;
-            state_flags._.auto_req = 0;
-            state_flags._.home_req = 0;
-        }
 #endif // MODE_SWITCH_TWO_POSITION
 		// With Failsafe Hold enabled: After losing RC signal, and then regaining it, you must manually
 		// change the mode switch position in order to exit RTL mode.

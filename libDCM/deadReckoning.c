@@ -39,7 +39,7 @@
 // seconds
 #define DR_TAU 2.5
 #define DR_TAU_Z 0.5
-
+#define IMU_INT_ACC_Z_MAX 200 //saturation intégrateur mm/s²
 // seconds * (cm/sec^2 / count) ??? is G always represented as cm/sec^2 ?
 // GRAVITYM is 980 cm/sec^2, GRAVITY is 2000 counts
 // dx/dt^2 * ACCEL2DELTAV = cm/sec
@@ -53,7 +53,7 @@
 // There is a subsequent right shift by 4 to cancel the multiply by 16.
 
 // Z velocity in mm/sec,  Z location in mm
-#define VELOCITY2LOCATION_Z (DR_TIMESTEP*MAX16*16.0)
+#define VELOCITY2LOCATION_Z (DR_TIMESTEP*MAX16)
 
 // dimensionless
 #define DR_FILTER_GAIN (int16_t)(DR_TIMESTEP*MAX16/DR_TAU)
@@ -62,7 +62,7 @@
 // 1/seconds
 //#define ONE_OVER_TAU (uint16_t)(MAX16/DR_TAU)
 #define DR_I_GAIN (DR_FILTER_GAIN/DR_TAU)
-#define DR_I_GAIN_Z (DR_FILTER_GAIN/DR_TAU_Z)*2
+#define DR_I_GAIN_Z (DR_FILTER_GAIN_Z/DR_TAU_Z)*2
 
 // velocity, as estimated by the IMU: high word is cm/sec
 union longww IMUvelocityx = { 0 };
@@ -106,6 +106,8 @@ void dead_reckon(void)
 	int16_t air_speed_x, air_speed_y, air_speed_z;
 	union longww accum;
 	union longww energy;
+    double currentDrI,currentDr;
+    
     {
 		// compute location and velocity errors
 		// for Z use LIDAR
@@ -119,25 +121,40 @@ void dead_reckon(void)
 			IMUintegralAccelerationz.WW = 0 ;
 		}
 		else
-		{		
+		{	
+            if (imu_dominant) {
+                currentDrI=DR_I_GAIN_Z;
+                currentDr=DR_FILTER_GAIN_Z;
+            }
+            else 
+            {
+                currentDrI=0.0;
+                currentDr=0.0;               
+            }
 				// use fusion for altitude
 			locationErrorEarth[2] = estimated_altitude - IMUlocationz._.W1;
 			velocityErrorEarth[2] = vze_fusion - IMUvelocityz._.W1;
 			//velocityErrorEarth[2] = 0 - IMUvelocityz._.W1;
 			// compensate for velocity error ;
-			IMUintegralAccelerationz.WW += __builtin_mulss(((int16_t)(DR_I_GAIN_Z)), velocityErrorEarth[2]);
+			IMUintegralAccelerationz.WW += __builtin_mulss(((int16_t)(currentDrI)), velocityErrorEarth[2]);
 
-			// integrate the raw acceleration mm/s
+			// Clamp de l'intégrateur de biais accel
+            if (IMUintegralAccelerationz._.W1 >  IMU_INT_ACC_Z_MAX)
+                IMUintegralAccelerationz._.W1 =  IMU_INT_ACC_Z_MAX;
+            if (IMUintegralAccelerationz._.W1 < -IMU_INT_ACC_Z_MAX)
+                IMUintegralAccelerationz._.W1 = -IMU_INT_ACC_Z_MAX;
+            
+            // integrate the raw acceleration mm/s
 			IMUvelocityz.WW += __builtin_mulss(((int16_t)(ACCEL2DELTAV_Z)), accelEarth[2]);
 		
 			// apply the proportional term for the acceleration bias compensation
-			IMUvelocityz.WW += __builtin_mulss(2*DR_FILTER_GAIN_Z, velocityErrorEarth[2]);
+			IMUvelocityz.WW += __builtin_mulss(2*currentDr, velocityErrorEarth[2]);
 		
 			// apply the integral term for the acceleration bias compensation
 			IMUvelocityz.WW += __builtin_mulss(DR_TIMESTEP*MAX16,IMUintegralAccelerationz._.W1);
 		
 			// integrate IMU velocity to update the IMU location	
-			IMUlocationz.WW += (__builtin_mulss(((int16_t)(VELOCITY2LOCATION_Z)), IMUvelocityz._.W1)>>4);
+			IMUlocationz.WW += (__builtin_mulss(((int16_t)(VELOCITY2LOCATION_Z)), IMUvelocityz._.W1));
 
 			// apply the location bias compensation
 			IMUlocationz.WW += __builtin_mulss(DR_FILTER_GAIN_Z, locationErrorEarth[2]);

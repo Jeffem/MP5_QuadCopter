@@ -826,7 +826,7 @@ void mavlink_output_40hz(void)
 	float earth_yaw_velocity;       // radians / sec with respect to earth
 	int16_t accum;                  // general purpose temporary storage
 	uint64_t gps_time;              // general purpose temporary storage
-//	union longbbbb accum_A_long;    // general purpose temporary storage
+	union longbbbb accum_A_long;    // general purpose temporary storage
 //	union longbbbb accum_B_long;    // general purpose temporary storage
 	uint8_t mavlink_base_mode;      // System mode, see MAV_MODE ENUM in mavlink/include/mavlink_types.h
 	uint32_t mavlink_custom_mode;   // Custom Status mode specific to the UDB / MatrixPilot
@@ -897,7 +897,7 @@ extern int control_mode;
 			mavlink_base_mode = MAV_MODE_TEST_ARMED; // Unknown state
 			mavlink_custom_mode = MAV_CUSTOM_UDB_MODE_MANUAL;
 		}
-        //gfm control mode displayed on the bit 2 of mavlink_base_mode
+        //gfm control lode displayed on the bit 2 of mavlink_base_mode
         if (control_mode != TILT_MODE) mavlink_base_mode  = mavlink_base_mode +2;
 //        mavlink_base_mode = dcm_flags._.dead_reckon_enable;
 //		mavlink_msg_heartbeat_send(MAVLINK_COMM_0, MAV_TYPE_FIXED_WING, MAV_AUTOPILOT_UDB, mavlink_base_mode, mavlink_custom_mode, MAV_STATE_ACTIVE);
@@ -910,7 +910,7 @@ extern int control_mode;
 #else
                 mavlink_msg_heartbeat_send(MAVLINK_COMM_0, gps_fix_type, tailFlash, mavlink_base_mode, mavlink_custom_mode, 0);
 #endif
-        //                mavlink_msg_heartbeat_send(MAVLINK_COMM_0, (uint8_t)((udb_pwIn[7]-lidar0) && 0x00FF), udb_cpu_load(), mavlink_base_mode, mavlink_custom_mode, (uint8_t)((udb_pwIn[7]-lidar0) >> 8));
+        //mavlink_msg_heartbeat_send(MAVLINK_COMM_0, (uint8_t)((udb_pwIn[7]-lidar0) && 0x00FF), udb_cpu_load(), mavlink_base_mode, mavlink_custom_mode, (uint8_t)((udb_pwIn[7]-lidar0) >> 8));
 		//mavlink_msg_heartbeat_send(mavlink_channel_t chan, uint8_t type, uint8_t autopilot, uint8_t base_mode, uint32_t custom_mode, uint8_t system_status)
 	}
 	// GPS RAW INT - Data from GPS Sensor sent as raw integers.
@@ -920,7 +920,7 @@ extern int control_mode;
 		int16_t gps_fix_type;
 		if (gps_nav_valid()){
 			gps_fix_type = 3;
-            gps_time = tow.WW;
+            gps_time = ((uint64_t)(week_no.BB) << 32) + tow.WW;
         }
 		else{
 			gps_fix_type = 0;
@@ -959,10 +959,10 @@ else
 
 		mavlink_heading = get_geo_heading_angle() * 100;    // mavlink global position expects heading value x 100
 // gfm		mavlink_msg_global_position_int_send(MAVLINK_COMM_0, msec, lat, lon, alt, relative_alt,
-		mavlink_msg_global_position_int_send(MAVLINK_COMM_0, msec, (int32_t)(IMUlocationy.WW), (int32_t)(IMUlocationx.WW),(int32_t)(IMUlocationz.WW),estimated_altitude,
+		mavlink_msg_global_position_int_send(MAVLINK_COMM_0, msec, (int32_t)(IMUlocationy._.W1), (int32_t)(IMUlocationx._.W1),(int32_t)(IMUlocationz._.W1),estimated_altitude,
 //		    -IMUvelocityy._.W1, IMUvelocityx._.W1, vze_fusion, //  IMUVelocity  normal units are in cm / second, >0 pitching up
 //		mavlink_msg_global_position_int_send(MAVLINK_COMM_0, msec, IMUlocationx.WW, IMUlocationy.WW, estimated_altitude, baro,
-		    -IMUvelocityy._.W1, (int16_t)(-vze_fusion), -IMUvelocityz._.W1, //  IMUVelocity  normal units are in cm / second, >0 pitching up
+		    -IMUvelocityy._.W1, -IMUvelocityx._.W1, -IMUvelocityz._.W1, //  IMUVelocity  normal units are in mm / second, >0 pitching up
 		    mavlink_heading); // heading should be from 0 to 35999 meaning 0 to 359.99 degrees.
 		// mavlink_msg_global_position_int_send(mavlink_channel_t chan, uint32_t time_boot_ms, int32_t lat, int32_t lon, int32_t alt,
 		//   int32_t relative_alt, int16_t vx, int16_t vy, int16_t vz, uint16_t hdg)
@@ -1024,15 +1024,16 @@ else
 	if (mavlink_frequency_send(streamRates[MAV_DATA_STREAM_POSITION], mavlink_counter_40hz + spread_transmission_load))
 	{
 		int16_t pwOut_max = 4000;
-		mavlink_heading = get_geo_heading_angle();
+        uint16_t throttle = (udb_pwOut[1]+udb_pwOut[2]+udb_pwOut[3]+udb_pwOut[4]) >>2;
+		mavlink_heading = get_geo_heading_angle() * 100;
 		if (THROTTLE_CHANNEL_REVERSED == 1) pwOut_max = 2000;
 		mavlink_msg_vfr_hud_send(MAVLINK_COMM_0,
 		    (float)(air_speed_3DIMU / 100.0),
 		    (float)(ground_velocity_magnitudeXY / 100.0),
 		    (int16_t)mavlink_heading,
-		    (uint16_t)(((float)((udb_pwOut[THROTTLE_OUTPUT_CHANNEL]) - udb_pwTrim[THROTTLE_INPUT_CHANNEL]) * 100.0) / (float)(pwOut_max - udb_pwTrim[THROTTLE_INPUT_CHANNEL])),
-		    ((float)(IMUlocationz._.W1 + (alt_origin.WW / 100.0))),
-		    (float) IMUvelocityz._.W1 / 100.0);                                 // Current climb rate in meters/second
+		    (uint16_t)(((float)((throttle) - udb_pwTrim[THROTTLE_INPUT_CHANNEL]) * 100.0) / (float)(pwOut_max - udb_pwTrim[THROTTLE_INPUT_CHANNEL])),
+		    ((float)(IMUlocationz._.W1 + (alt_origin.WW / 1000.0))),
+		    (float) IMUvelocityz._.W1);                                 // Current climb rate in meters/second
 		//void mavlink_msg_vfr_hud_send(mavlink_channel_t chan, float airspeed, float groundspeed, int16_t heading, uint16_t throttle, float alt, float climb)
 	}
 #endif // (MSG_VFR_HUD_WITH_POSITION == 1)
@@ -1085,8 +1086,8 @@ else
 		    (uint16_t)((udb_pwIn[2]) >> 1),
 		    (uint16_t)((udb_pwIn[3]) >> 1),
 		    (uint16_t)((udb_pwIn[4]) >> 1),
-		    (uint16_t)((udb_pwIn[7])-lidar0),
-		    //(uint16_t)((udb_pwOut[1]) >> 1),
+		    //(uint16_t)((udb_pwIn[7])-lidar0),
+		    (uint16_t)((udb_pwOut[1]) >> 1),
 		    (uint16_t)((udb_pwOut[2]) >> 1),
 		    (uint16_t)((udb_pwOut[3]) >> 1),
 		    (uint16_t)((udb_pwOut[4]) >> 1),

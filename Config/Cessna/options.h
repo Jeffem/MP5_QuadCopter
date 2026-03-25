@@ -483,9 +483,9 @@
 // Proportional gains should be less than 4.0.
 // Rate gains should be less than 0.8.
 // With the new helical turn control, rate gains are not even needed, try setting them all to zero.
-// Proportional gains include ROLLKP, YAWKP_AILERON, PITCHGAIN,
+// Proportional gains include ROLLKP, YAWKP_AILERON, PITCHKP,
 // ELEVATOR_BOOST, YAWKP_RUDDER, ROLLKP_RUDDER,
-// MANUAL_AILERON_RUDDER_MIX, RUDDER_BOOST, HOVER_ROLLKP, HOVER_PITCHGAIN, HOVER_YAWKP
+// MANUAL_AILERON_RUDDER_MIX, RUDDER_BOOST, HOVER_ROLLKP, HOVER_PITCHKP, HOVER_YAWKP
 // Rate gains include ROLLKD, YAWKD_AILERON, PITCHKD, YAWKD_RUDDER, ROLLKD_RUDDER,
 // HOVER_ROLLKD, HOVER_PITCHKD, HOVER_YAWKD
 
@@ -520,10 +520,10 @@
 #define YAWKD_AILERON                       0.04
 
 // Elevator/Pitch Control Gains
-// PITCHGAIN is the pitch stabilization gain, typically around 0.125
+// PITCHKP is the pitch stabilization gain, typically around 0.125
 // PITCHKD feedback gain for pitch damping, around 0.0625
 // ELEVATOR_BOOST is the additional gain multiplier for the manually commanded elevator deflection
-#define PITCHGAIN                           0.2
+#define PITCHKP                             0.2
 #define PITCHKD                             0.15
 #define ELEVATOR_BOOST                      0.8
 
@@ -584,7 +584,7 @@
 // Gains are named based on plane's frame of reference (roll means ailerons)
 // HOVER_ROLLKP is the roll-proportional feedback gain applied to the ailerons while navigating a hover
 // HOVER_ROLLKD is the roll gyro feedback gain applied to ailerons while stabilizing a hover
-// HOVER_PITCHGAIN is the pitch-proportional feedback gain applied to the elevator while stabilizing a hover
+// HOVER_PITCHKP is the pitch-proportional feedback gain applied to the elevator while stabilizing a hover
 // HOVER_PITCHKD is the pitch gyro feedback gain applied to elevator while stabilizing a hover
 // HOVER_PITCH_OFFSET is the neutral pitch angle for the plane (in degrees) while stabilizing a hover
 // HOVER_YAWKP is the yaw-proportional feedback gain applied to the rudder while stabilizing a hover
@@ -595,7 +595,7 @@
 //                            value is proportionally scaled down.
 #define HOVER_ROLLKP                        0.1
 #define HOVER_ROLLKD                        0.4
-#define HOVER_PITCHGAIN                     0.75
+#define HOVER_PITCHKP                       0.75
 #define HOVER_PITCHKD                       0.5
 #define HOVER_PITCH_OFFSET                  0.0        // + leans towards top, - leans towards bottom
 #define HOVER_YAWKP                         0.75

@@ -308,10 +308,10 @@
 // Often the Flap channel will be controlled by a 3-position switch.
 // These are the thresholds for the cutoffs between low and middle, and between middle and high.
 // Normal signals should fall within about 2000 - 4000.
-#define FLIGHT_MODE_SWITCH_THRESHOLD_LOW           2600
-#define FLIGHT_MODE_SWITCH_THRESHOLD_HIGH          3400
-#define CTRL_MODE_SWITCH_THRESHOLD_LOW             2600
-#define CTRL_MODE_SWITCH_THRESHOLD_HIGH            3400
+#define FLIGHT_MODE_SWITCH_THRESHOLD_LOW           2640
+#define FLIGHT_MODE_SWITCH_THRESHOLD_HIGH          3440
+#define CTRL_MODE_SWITCH_THRESHOLD_LOW             2640
+#define CTRL_MODE_SWITCH_THRESHOLD_HIGH            3440
 
 
 // Setting MODE_SWITCH_TWO_POSITION to 1,  allows a two state mode switch on the transmitter to be used
@@ -759,10 +759,10 @@
 // Use ALT_HOLD_THROTTLE_MIN when above HEIGHT_MARGIN of the target height.
 // Throttle values are from 0.0 - 1.0.
 #define ALT_HOLD_THROTTLE_MIN     0.0
-#define ALT_HOLD_THROTTLE_MAX     1.0
-#define THROTTLE_KI                0.01  // nominal value 0.02 will be displayed as 0.02*1.6/200=0 by Mavlink
-#define THROTTLE_KP               0.08   // nominal value 1/8 will be displayed as 1*1.6=1.6 by Mavlink
-#define THROTTLE_KD               0.3   // nominal value 0.5 will be displayed as 0.5*1.6=0.8 by Mavlink
+#define ALT_HOLD_THROTTLE_MAX     4.0
+#define THROTTLE_KI               0.1   // nominal value 0.02 will be displayed as 0.02*1.6/200=0 by Mavlink
+#define THROTTLE_KP               1.0   // nominal value 1/8 will be displayed as 1*1.6=1.6 by Mavlink
+#define THROTTLE_KD               0.7   // nominal value 0.5 will be displayed as 0.5*1.6=0.8 by Mavlink
 #define THROTTLE_KA               0.0 //nominal value 0.05 will be displayed as 0.05*980/1024*1.6=0.75 by Mavlink
 
 // Use ALT_HOLD_PITCH_MAX when below HEIGHT_MARGIN of the target height.

@@ -35,7 +35,7 @@ void altimeter_calibrate(void);
 void estAltitude(void);
 extern int32_t estimated_altitude;        // previous above ground height (millimeters)
 extern int32_t vze_fusion;                // Altitude speed fusion output (in mm)
-
+extern boolean  imu_dominant;
 long get_barometer_altitude(void);
 long get_barometer_pressure(void);
 int16_t get_barometer_temperature(void);

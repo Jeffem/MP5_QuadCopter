@@ -48,7 +48,7 @@ static uint8_t counter = 0;
 #else
 //#define CALIB_PAUSE (10.5 * FSM_CLK)    // wait for 10.5 seconds of runs through the state machine
 #define CALIB_PAUSE (DCM_CALIB_COUNT / PID_HZ * FSM_CLK + 1)
-#define STANDBY_PAUSE (DCM_GPS_COUNT / PID_HZ * FSM_CLK *2 )    // pause for 50 seconds of runs through the state machine
+#define STANDBY_PAUSE (DCM_GPS_COUNT / PID_HZ * FSM_CLK )    // pause for 50 seconds of runs through the state machine
 //#define STANDBY_PAUSE (48 * FSM_CLK)    // pause for 48 seconds of runs through the state machine
                                         // This used to be 24 seconds, but that was not long enough
                                         // Standby pause was raised from 24 seconds to 48 seconds by BillP

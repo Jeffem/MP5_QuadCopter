@@ -197,7 +197,7 @@ void udb_heartbeat_callback(void)
 		{
 			dcm_run_calib_step(udb_pulse_counter / (HEARTBEAT_HZ / PID_HZ));
             #if ((USE_BAROMETER_ALTITUDE > 0) ||  (USE_LIDAR_ALTITUDE > 0))
-                            altimeter_calibrate();
+              altimeter_calibrate();
             #endif
 		}
 		if (!dcm_flags._.init_finished)

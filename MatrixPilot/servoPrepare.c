@@ -118,8 +118,7 @@ static void flight_controller(void)
 		rollCntrl();
 		yawCntrl();
 		pitchCntrl();
-                  if (dcm_flags._.calib_finished)
-                     estAltitude(); //estAltitude in mm
+        if (dcm_flags._.calib_finished) estAltitude(); //estAltitude in mm
 		altitudeCntrl();
 #else		
 		wind_gain = wind_gain_adjustment();
@@ -127,7 +126,7 @@ static void flight_controller(void)
 		yawCntrl();
 		altitudeCntrl();
 		pitchCntrl();
-                  servoMix();
+        servoMix();
 		cameraCntrl();
 		cameraServoMix();
 #endif

@@ -29,7 +29,7 @@
 #include "../Config/options_multicopter.h"
 /*
 #include "oscillator.h"
-
+*/
 #if AIRFRAME_TYPE != AIRFRAME_QUAD
 #if (MIPS == 64)
 #define SCALE_FOR_PWM_OUT(x)    (x/2)
@@ -62,7 +62,7 @@
 #define T3PERIOD (T3FREQ / ESC_HZ)
 
 #endif
-*/
+
 //	routines to drive the PWM pins for the servos,
 
 int16_t udb_pwOut[NUM_OUTPUTS+1];   // pulse widths for servo outputs

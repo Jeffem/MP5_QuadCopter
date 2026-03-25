@@ -64,7 +64,7 @@ union longww throttle_error_integral = { 0 };
 #define Neutral 700 //Nominal value for SK450 with 3S batterie
 #endif
 #ifdef spedix
-#define Neutral 700 //Nominal value for SK450 with 3S batterie
+#define Neutral 860 //Nominal value for Spedix with 3S batterie
 #endif
 static void normalAltitudeCntrl(void);
 #if AIRFRAME_TYPE != AIRFRAME_QUAD
@@ -304,33 +304,33 @@ static void normalAltitudeCntrl(void)
 
 			if (desiredHeight < (int16_t)(HEIGHT_TARGET_MIN)) desiredHeight = (int16_t)(HEIGHT_TARGET_MIN);
 			if (desiredHeight > (int16_t)(HEIGHT_TARGET_MAX)) desiredHeight = (int16_t)(HEIGHT_TARGET_MAX);
-                            //Rate limiter to command no more than 2 m/s
-                            if (desiredHeight-desiredHeight_1 > DHRATEMAX) desiredHeight=desiredHeight_1+DHRATEMAX;
-                            if (desiredHeight-desiredHeight_1 < -DHRATEMAX) desiredHeight=desiredHeight_1-DHRATEMAX;
-                            desiredHeight_1=desiredHeight;
+            //Rate limiter to command no more than 2 m/s
+            if (desiredHeight-desiredHeight_1 > DHRATEMAX) desiredHeight=desiredHeight_1+DHRATEMAX;
+            if (desiredHeight-desiredHeight_1 < -DHRATEMAX) desiredHeight=desiredHeight_1-DHRATEMAX;
+            desiredHeight_1=desiredHeight;
 		}
 		if (throttleInOffset < (int16_t)(DEADBAND) && udb_flags._.radio_on)
 		{
 			throttleAccum.WW  = 0;
-                            IntegthrottleAccum.WW = 0;
+            IntegthrottleAccum.WW = 0;
 		}
 		else
 		{
-//                            heightError._.W0 = desiredHeight - (IMUlocationz.WW >> 6) ;//error in mm
-                            heightError._.W0 = desiredHeight - estimated_altitude ;//error in mm
-                            throttleAccum.WW = (__builtin_mulus((int16_t)(throttlekp), heightError._.W0 ))<< 5;
-                            //Integral term to take into account misadapted neutral thrust due to battery voltage and other causes
-                            throttle_error_integral.WW = throttle_error_integral.WW+(heightError._.W0 << 2);
-                            IntegthrottleAccum.WW = (__builtin_mulus((int16_t)(throttleki), throttle_error_integral._.W1)) ;
-                            if (IntegthrottleAccum._.W1> Thrust_CLAMP )  IntegthrottleAccum._.W1 = Thrust_CLAMP ;
-                            if (IntegthrottleAccum._.W1< -Thrust_CLAMP )  IntegthrottleAccum._.W1 = -Thrust_CLAMP ;
+//           heightError._.W0 = desiredHeight - (IMUlocationz.WW >> 6) ;//error in mm
+             heightError._.W0 = desiredHeight - estimated_altitude ;//error in mm
+             throttleAccum.WW = (__builtin_mulus((int16_t)(throttlekp), heightError._.W0 ))<< 5;
+             //Integral term to take into account misadapted neutral thrust due to battery voltage and other causes
+             throttle_error_integral.WW = throttle_error_integral.WW+(heightError._.W0 << 2);
+             IntegthrottleAccum.WW = (__builtin_mulus((int16_t)(throttleki), throttle_error_integral._.W1)) ;
+             if (IntegthrottleAccum._.W1> Thrust_CLAMP )  IntegthrottleAccum._.W1 = Thrust_CLAMP ;
+             if (IntegthrottleAccum._.W1< -Thrust_CLAMP )  IntegthrottleAccum._.W1 = -Thrust_CLAMP ;
 			
-                   }
+        }
     }
 else
    {
-	 throttleAccum.WW  = 0;
-          IntegthrottleAccum.WW = 0;
+	throttleAccum.WW  = 0;
+    IntegthrottleAccum.WW = 0;
           // desiredHeight_1 is initialized at the current throttle stick position during manual mode
 	desiredHeight_1 = ((__builtin_mulss((int16_t)(HEIGHTTHROTTLEGAIN), throttleInOffset - ((int16_t)(DEADBAND)))) >> 8)
 			                + ((int16_t)(HEIGHT_TARGET_MIN));
@@ -532,20 +532,21 @@ void InneraltitudeCntrl(void)
 	union longww speedFeedback;
 	union longww AccelFeedback;
 //	union longww throttleAccum;
-        static int16_t accelEarthFiltered;
-        if (state_flags._.altitude_hold_throttle || state_flags._.altitude_hold_pitch)
+    static int16_t accelEarthFiltered;
+    if (state_flags._.altitude_hold_throttle || state_flags._.altitude_hold_pitch)
 	{
-        Filter(&accelEarthFiltered,accelEarth[2],2,C,D);
-        AccelFeedback.WW = __builtin_mulus(throttleka , accelEarthFiltered) ;
+        //Filter(&accelEarthFiltered,accelEarth[2],2,C,D);
+        //AccelFeedback.WW = __builtin_mulus(throttleka , accelEarthFiltered) ;
 //        AccelFeedback.WW = __builtin_mulus(throttleka , accelEarth[2])<<3 ;
         speedFeedback.WW = __builtin_mulus(throttlekd , IMUvelocityz._.W1) << 2;//IMUvelocityz._.W1 in mm/s, positive upward
         }
         else
         {
-	speedFeedback.WW = 0;
+	    speedFeedback.WW = 0;
         AccelFeedback.WW = 0;
         }
-	throttle_control = outeraltitude_control - (int32_t)speedFeedback._.W1 - (int32_t)AccelFeedback._.W1;
+	//throttle_control = outeraltitude_control - (int32_t)speedFeedback._.W1 - (int32_t)AccelFeedback._.W1;
+	throttle_control = outeraltitude_control - (int32_t)speedFeedback._.W1;
     if (throttle_control > SERVORANGE+Thrust_CLAMP*2) throttle_control = SERVORANGE+Thrust_CLAMP*2;
     if (throttle_control < SERVORANGE-Thrust_CLAMP*2) throttle_control = SERVORANGE-Thrust_CLAMP*2;
 }
